@@ -24,7 +24,7 @@
 
   
 
-  <title>Hello World | 文玉昊</title>
+  <title>K邻近算法 | 文玉昊</title>
 
   
 
@@ -96,16 +96,20 @@
     <div class="header-content">
       <div class="post-text layout-block">
         <div class="layout-margin">
-          <h1 class="title-wrap">Hello World</h1>
+          <h1 class="title-wrap">K邻近算法</h1>
           <h2 class="title-sub-wrap">
             <strong>wenyuhao</strong>
             <span>发布于</span>
-            <time  class="article-date" datetime="2021-08-07T07:16:33.611Z" itemprop="datePublished">2021-08-07</time>
+            <time  class="article-date" datetime="2021-08-07T08:10:25.000Z" itemprop="datePublished">2021-08-07</time>
           </h2>
           <ul class="wrap-list dark">
   
+    <li><a href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">📒 数据分析</a></li>
+  
 </ul>
           <ul class="wrap-list dark">
+  
+    <li><a href="/tags/%E5%AE%8C%E6%88%90/">🏷️ 完成</a></li>
   
 </ul>
         </div>
@@ -129,19 +133,11 @@
       
       
       <section class="article-entry markdown-body layout-margin content-padding--large soft-size--large soft-style--box">
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+        <p>1，距离的度量<br><img src="/images/13330053-723e6c254a523c03.png" alt="这个图是从别的博客中截过来的，但是我忘了是哪一个博客了,怎么办......"><br>2，k近邻就是在列表中找到与自己距离最小的前k个，统计他们的属性值，出现最多的属性认为是自己的属性。<br>第一步，计算距离，默认为欧式距离。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">import numpy as np</span><br><span class="line">def Calculate_distance(x:np.array,y:np.array,ty=2)-&gt;np.array:</span><br><span class="line">    #计算距离 ty=2 欧式距离 ty=1 曼哈顿距离 ty&gt;2闵科夫斯基距离</span><br><span class="line">    if x.shape != y.shape:</span><br><span class="line">        raise Exception(&#x27;length is not equal !&#x27;)</span><br><span class="line">    return np.sum(np.abs(x-y)**ty,axis=1)**(1/ty)</span><br></pre></td></tr></table></figure>
+<p>第二步，预测向量的属性值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">from collections import Counter</span><br><span class="line">def classify(inp:np.array,dataSet:np.array,label:list,k:int,ty=2):</span><br><span class="line">#k 近邻分类器 inp 为输入需要预测的向量，dataset为训练数据框，</span><br><span class="line">#label 为训练数据框的结果 k为取最近的数的个数 ty为计算距离方式。</span><br><span class="line">#inp.shape=(n,),dataSet.shape=(m,n),len(label)=m</span><br><span class="line">    if (inp.shape[0]!=dataSet.shape[1] or dataSet.shape[0] != len(label)):</span><br><span class="line">        raise Exception(&#x27;length is not equal !&#x27;)</span><br><span class="line">    source=np.tile(inp,(dataSet.shape[0],1))</span><br><span class="line">    distances=Calculate_distance(source,dataSet,ty=ty)</span><br><span class="line">    index=distances.argsort(kind=&#x27;quicksort&#x27;)#快速升序排序，返回索引列表。</span><br><span class="line">    d=Counter([label[i] for i in index[:k]])</span><br><span class="line">    return max(d,key=d.get)</span><br></pre></td></tr></table></figure>
+<p>3,应用和结果展示。<br>这里我就把转录组作业放上来了。<br>下载基因芯片数据，然后分别用双样本t检验，SVM_RFE，pca对基因芯片打分后排序，再用svm和knn算法对结果进行留一法检验。<br><a target="_blank" rel="noopener" href="https://github.com/wenyuhaokikika/ml/blob/master/07.ipynb">https://github.com/wenyuhaokikika/ml/blob/master/07.ipynb</a></p>
 
       </section>
 
@@ -154,8 +150,8 @@
     
     <div class="card-text">
       
-        <a href="/2021/08/07/K%E8%BF%91%E9%82%BB%E7%AE%97%E6%B3%95%EF%BC%88python%EF%BC%89/" itemprop="url">
-          <h2 class="card-text--title text-ellipsis">K邻近算法</h2>
+        <a href="/2021/08/07/bootstrap-select%E5%8A%A8%E6%80%81%E6%94%B9%E5%8F%98option%E4%B8%BA%E7%A9%BA/" itemprop="url">
+          <h2 class="card-text--title text-ellipsis">bootstrap-select动态改变option为空</h2>
         </a>
       
       <div class="card-text--row">Newer</div>
@@ -169,8 +165,8 @@
     
     <div class="card-text">
       
-        <a href="/2021/08/07/Celery-%E5%9C%A8Django%E4%B8%AD%E7%AE%80%E5%8D%95%E5%AE%9E%E4%BE%8B/" itemprop="url">
-          <h2 class="card-text--title text-ellipsis">Celery-在Django中简单实例</h2>
+        <a href="/2021/08/07/hello-world/" itemprop="url">
+          <h2 class="card-text--title text-ellipsis">Hello World</h2>
         </a>
       
       <div class="card-text--row">Older</div>
