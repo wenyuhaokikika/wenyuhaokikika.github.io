@@ -24,7 +24,7 @@
 
   
 
-  <title>组合算法 | 文玉昊</title>
+  <title>文玉昊</title>
 
   
 
@@ -96,20 +96,16 @@
     <div class="header-content">
       <div class="post-text layout-block">
         <div class="layout-margin">
-          <h1 class="title-wrap">组合算法</h1>
+          <h1 class="title-wrap"></h1>
           <h2 class="title-sub-wrap">
             <strong>wenyuhao</strong>
             <span>发布于</span>
-            <time  class="article-date" datetime="2020-08-07T08:10:25.000Z" itemprop="datePublished">2020-08-07</time>
+            <time  class="article-date" datetime="2021-08-08T13:27:26.521Z" itemprop="datePublished">2021-08-08</time>
           </h2>
           <ul class="wrap-list dark">
   
-    <li><a href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">📒 数据分析</a></li>
-  
 </ul>
           <ul class="wrap-list dark">
-  
-    <li><a href="/tags/%E5%AE%8C%E6%88%90/">🏷️ 完成</a></li>
   
 </ul>
         </div>
@@ -133,20 +129,80 @@
       
       
       <section class="article-entry markdown-body layout-margin content-padding--large soft-size--large soft-style--box">
-        <p>  有A，T，C，G四个字符串，一共有6个位置，每个位置可以填四个中的任意一个，输出所有的组合。<br>1，递归输出。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">def permutations(n,s=&#x27;&#x27;):</span><br><span class="line">	if(n==0):</span><br><span class="line">		print(s)</span><br><span class="line">	else:</span><br><span class="line">		permutations(n-1,s+&quot;A&quot;)</span><br><span class="line">		permutations(n-1,s+&quot;T&quot;)</span><br><span class="line">		permutations(n-1,s+&quot;C&quot;)</span><br><span class="line">		permutations(n-1,s+&quot;G&quot;)</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2,利用itertools。</span><br></pre></td></tr></table></figure>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>from itertools import combinations, permutations<br>combinations([1,2,3,4,5],2)<br>&lt;itertools.combinations object at 0x10469a650&gt;<br>[i for i in combinations([1,2,3,4,5],2)]<br>[(1, 2), (1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (2, 5), (3, 4), (3, 5), (4, 5)]<br>[i for i in permutations([1,2,3,4,5],2)]<br>[(1, 2), (1, 3), (1, 4), (1, 5), (2, 1), (2, 3), (2, 4), (2, 5), (3, 1), (3, 2), (3, 4), (3, 5), (4, 1), (4, 2), (4, 3), (4, 5), (5, 1), (5, 2), (5, 3), (5, 4)]</p>
-</blockquote>
-</blockquote>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">```</span><br><span class="line">&gt;&gt;&gt; from itertools import combinations, permutations</span><br><span class="line">&gt;&gt;&gt; [i for i in permutations([&#x27;A&#x27;,&#x27;T&#x27;,&#x27;C&#x27;,&#x27;G&#x27;],4)]</span><br><span class="line">[(&#x27;A&#x27;, &#x27;T&#x27;, &#x27;C&#x27;, &#x27;G&#x27;), (&#x27;A&#x27;, &#x27;T&#x27;, &#x27;G&#x27;, &#x27;C&#x27;), (&#x27;A&#x27;, &#x27;C&#x27;, &#x27;T&#x27;, &#x27;G&#x27;), (&#x27;A&#x27;, &#x27;C&#x27;, &#x27;G&#x27;, &#x27;T&#x27;), (&#x27;A&#x27;, &#x27;G&#x27;, &#x27;T&#x27;, &#x27;C&#x27;), (&#x27;A&#x27;, &#x27;G&#x27;, &#x27;C&#x27;, &#x27;T&#x27;), (&#x27;T&#x27;, &#x27;A&#x27;, &#x27;C&#x27;, &#x27;G&#x27;), (&#x27;T&#x27;, &#x27;A&#x27;, &#x27;G&#x27;, &#x27;C&#x27;), (&#x27;T&#x27;, &#x27;C&#x27;, &#x27;A&#x27;, &#x27;G&#x27;), (&#x27;T&#x27;, &#x27;C&#x27;, &#x27;G&#x27;, &#x27;A&#x27;), (&#x27;T&#x27;, &#x27;G&#x27;, &#x27;A&#x27;, &#x27;C&#x27;), (&#x27;T&#x27;, &#x27;G&#x27;, &#x27;C&#x27;, &#x27;A&#x27;), (&#x27;C&#x27;, &#x27;A&#x27;, &#x27;T&#x27;, &#x27;G&#x27;), (&#x27;C&#x27;, &#x27;A&#x27;, &#x27;G&#x27;, &#x27;T&#x27;), (&#x27;C&#x27;, &#x27;T&#x27;, &#x27;A&#x27;, &#x27;G&#x27;), (&#x27;C&#x27;, &#x27;T&#x27;, &#x27;G&#x27;, &#x27;A&#x27;), (&#x27;C&#x27;, &#x27;G&#x27;, &#x27;A&#x27;, &#x27;T&#x27;), (&#x27;C&#x27;, &#x27;G&#x27;, &#x27;T&#x27;, &#x27;A&#x27;), (&#x27;G&#x27;, &#x27;A&#x27;, &#x27;T&#x27;, &#x27;C&#x27;), (&#x27;G&#x27;, &#x27;A&#x27;, &#x27;C&#x27;, &#x27;T&#x27;), (&#x27;G&#x27;, &#x27;T&#x27;, &#x27;A&#x27;, &#x27;C&#x27;), (&#x27;G&#x27;, &#x27;T&#x27;, &#x27;C&#x27;, &#x27;A&#x27;), (&#x27;G&#x27;, &#x27;C&#x27;, &#x27;A&#x27;, &#x27;T&#x27;), (&#x27;G&#x27;, &#x27;C&#x27;, &#x27;T&#x27;, &#x27;A&#x27;)]</span><br></pre></td></tr></table></figure>
-<p>3，变化进制加法实现。<br>比如，求10位每位上有两种选择，0或1,的所有排列组合，这个时候我们只需遍历一遍0到1024(2的10次方),0,1,10,11,100,……。再在前面补充0使字符串的总长度为10，是不是就可以得倒所有的排列组合了吗？<br>和这一道题同理，只不过这道题是4进制（0，1，2，3分别代表ATCG）。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">def Permutations(max_len):</span><br><span class="line">    singles=[&#x27;A&#x27;,&#x27;T&#x27;,&#x27;C&#x27;,&#x27;C&#x27;]</span><br><span class="line">    dec=len(singles)</span><br><span class="line">    def translate(n,dec=4):#这个函数是把10进制的数n补成dec=4进制，然后返回和singles对应索引的数反转后的字符串。</span><br><span class="line">        a=[]</span><br><span class="line">        while(True):</span><br><span class="line">            a.append(n%dec)</span><br><span class="line">            n=int(n/dec)</span><br><span class="line">            if(n==0):</span><br><span class="line">                break</span><br><span class="line">        return &quot;&quot;.join(map(lambda x:singles[x],a))[::-1]</span><br><span class="line">    def supplement(s,max_len,default=&#x27;A&#x27;):#这个函数在前面补充字符串为A（0）。</span><br><span class="line">        return (max_len-len(s))*&#x27;A&#x27;+s</span><br><span class="line">    for i in range(dec**max_len):</span><br><span class="line">        print(supplement(translate(i,dec=dec),max_len=max_len))</span><br></pre></td></tr></table></figure>
-<p>其中，数组singles为每个位置可以放的字符串集合，max_len为字符串的位数。<br><code>Permutations(6)</code>即可调用。</p>
+        <p>-–</p>
+<p>title: ‘ hexo和github搭建博客’</p>
+<p>date: 2019-08-07 16:10:25</p>
+<p>author: ‘wenyuhao’</p>
+<p>categories: ‘数据分析’</p>
+<p>tags: ‘完成’</p>
+<p>-–</p>
+<h2 id="搭建博客"><a href="#搭建博客" class="headerlink" title="搭建博客"></a>搭建博客</h2><ul>
+<li><p>新建一个github账户。</p>
+</li>
+<li><p>新建一个repositorie，名称是<code>username.github.io</code>,比方说我的github账号名称是<code>wenyuhaokikika</code>，那就是<code>wenyuhaokikika.github.io</code>.</p>
+</li>
+<li><p>打开setting下面的pages，选择一个主题。</p>
+</li>
+<li><p>npm安装hexo。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm i hexo-cli -g</span><br><span class="line">npm i hexo -g</span><br><span class="line">hexo -v <span class="comment">#看一下是否安装成功</span></span><br></pre></td></tr></table></figure></li>
+<li><p>找一个文件夹初始化博客<code>hexo init</code></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ls</span><br><span class="line">_config.landscape.yml  _config.yml  db.json  node_modules  package.json  package-lock.json  public  scaffolds  <span class="built_in">source</span>  themes  yarn.lock</span><br></pre></td></tr></table></figure></li>
+<li><p>在github上面找一个博客主题下载</p>
+</li>
+</ul>
+<p>我找的是<a target="_blank" rel="noopener" href="https://github.com/miiiku/hexo-theme-flexblock">hexo-theme-flexblock</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> themes</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/miiiku/hexo-theme-flexblock.git</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>然后改配置文件，这里有两个配置文件，blog根目录下面的<code>_config.yml</code>,还有主题配置文件<code>themes/flex-block/_config.yml</code>,两个都需要改</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#根目录下配置文件_config.yml</span></span><br><span class="line">title: 文玉昊</span><br><span class="line">subtitle: &#x27;&#x27;</span><br><span class="line">description: &#x27;生物信息&#x27;</span><br><span class="line">keywords:</span><br><span class="line">author: wenyuhao</span><br><span class="line"></span><br><span class="line"><span class="comment"># Deployment</span></span><br><span class="line"><span class="comment">## Docs: https://hexo.io/docs/one-command-deployment</span></span><br><span class="line">deploy:</span><br><span class="line">  type: &#x27;git&#x27;</span><br><span class="line">  repository: git@github.com:/wenyuhaokikika/wenyuhaokikika.github.io <span class="comment">#git://github.com/wenyuhaokikika/wenyuhaokikika.github.io</span></span><br><span class="line">  branch: master</span><br><span class="line">  ignore_hidden: false</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#主题目录下的_config.yml</span></span><br><span class="line"><span class="comment"># Social Icon</span></span><br><span class="line">social_icon:</span><br><span class="line">  enable: true</span><br><span class="line">  icons:</span><br><span class="line">    ins     :</span><br><span class="line">    zhihu   : https://www.zhihu.com/people/xing-zhe-80-14</span><br><span class="line">    weibo   :</span><br><span class="line">    github  : https://github.com/wenyuhaokikika</span><br><span class="line">    <span class="comment">#twitter : https://twitter.com/guanquanhong</span></span><br></pre></td></tr></table></figure></li>
+<li><p>生成并发布文章</p>
+<p>这时候就可以发文章了，可以用命令<code>hexo new &quot;My New Post&quot;</code>,也可以直接把md格式的文章移到<code>source/_posts</code>,中，然后用命令<code>hexo g</code>生成html的格式的文章,然后<code>hexo s</code>,在4000端口看看效果，效果成功后<code>hexo d</code>，发布文章。</p>
+</li>
+</ul>
+<h2 id="问题记录"><a href="#问题记录" class="headerlink" title="问题记录"></a>问题记录</h2><ul>
+<li><p>hexo d上传成功后发现，github也成功了，可是博客就是没变化。</p>
+<p>_config.yml中分支要和pages设置的分支对的上，之前github默认的pages页面是main分支，而 _config.yml是master分支，所以在github的pages页面将main分支切换为master分支，或者将master和main分支merge也可以。</p>
+<p>也可能是因为github有延迟，要等一会，大概一分钟左右。</p>
+</li>
+<li><p>输入hexo出现。</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">internal/bootstrap/switches/does_own_process_state.js:128 </span><br><span class="line">cached Cwd = raw Methods.cwd();</span><br></pre></td></tr></table></figure>
+
+<p>这时候不止输入hexo会报错，输入npm也会报错，重新ssh一下或者su 用户名一下。</p>
+<ul>
+<li>插入图片。</li>
+</ul>
+<p>将根目录下_config.yml的中改为<code>post_asset_folder: true</code>，在md中图片为<code>![图片](/images/13330053-723e6c254a523c03.png)</code>,就可以了。</p>
+<p>images文件夹在source下面</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ls <span class="built_in">source</span></span><br><span class="line">categories  images  _posts  tags</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>给文章添加tags和categories。</li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo new page categories</span><br><span class="line">hexo new page tags</span><br></pre></td></tr></table></figure>
+
+<p>运行完成后source文件夹中多了categories和tags文件夹。</p>
+<p>如果想把文章打标签和分类，在md的头文件中添加</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">\---</span><br><span class="line"></span><br><span class="line">title: &#x27; hexo和github搭建博客&#x27;</span><br><span class="line"></span><br><span class="line">date: 2019-08-07 16:10:25</span><br><span class="line"></span><br><span class="line">author: &#x27;wenyuhao&#x27;</span><br><span class="line"></span><br><span class="line">categories: &#x27;数据分析&#x27;</span><br><span class="line"></span><br><span class="line">tags: &#x27;完成&#x27;</span><br><span class="line"></span><br><span class="line">\---</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>添加评论系统</p>
+<p>这里去<a target="_blank" rel="noopener" href="https://www.leancloud.cn/%E7%94%B3%E8%AF%B7%E4%B8%80%E4%B8%AA%E8%B4%A6%E5%8F%B7%E3%80%82%E6%96%B0%E5%BB%BA%E4%B8%80%E4%B8%AA%E5%BA%94%E7%94%A8%EF%BC%8C%E5%B7%A6%E4%BE%A7%E6%9C%89%E4%B8%80%E4%B8%AA%E8%AE%BE%E7%BD%AE--&gt;%E5%BA%94%E7%94%A8%E5%87%AD%E8%AF%81%EF%BC%8C%E5%A4%8D%E5%88%B6appid%E5%92%8Cappkey%E3%80%82">https://www.leancloud.cn/申请一个账号。新建一个应用，左侧有一个设置--&gt;应用凭证，复制appid和appkey。</a></p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">comments:</span><br><span class="line">  enable: true</span><br><span class="line">  use: &#x27;valine&#x27; <span class="comment"># valine || disqus</span></span><br><span class="line">  <span class="comment"># valine 评论</span></span><br><span class="line">  <span class="comment"># docs: https://valine.js.org</span></span><br><span class="line">  <span class="comment"># You can get your appid and appkey from https://leancloud.cn</span></span><br><span class="line">  <span class="comment"># 这里appId和appKey一定一定要改成自己的，没有的话去https://leancloud.cn这个网站注册创建一个</span></span><br><span class="line">  valine:</span><br><span class="line">    appId:</span><br><span class="line">    appKey:</span><br><span class="line">    avatar: mm</span><br><span class="line">    placeholder: 随便说点什么叭～</span><br><span class="line">    notify: true</span><br><span class="line">    visitor: true</span><br><span class="line">    pageSize: 10</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>hexo命令都干啥了</p>
+<p>hexo g:将md格式转化为html并根据时间整理在public文件夹中</p>
+<p>hexo s:生成一个本地服务器用来调试</p>
+<p>hexo d将发布版本(public文件夹下面)发布到github.</p>
+</li>
+</ul>
+</li>
+</ul>
 
       </section>
 
@@ -154,28 +210,14 @@
       
         <nav class="article-nav">
           
-            <div class="article-nav-item layout-padding">
-  <article class="card-container article-nav-card content-padding--primary soft-size--large soft-style--box">
-    
-    <div class="card-text">
-      
-        <a href="/2021/08/07/My-First-Post/" itemprop="url">
-          <h2 class="card-text--title text-ellipsis">My First Post</h2>
-        </a>
-      
-      <div class="card-text--row">Newer</div>
-    </div>
-  </article>
-</div>
-          
           
             <div class="article-nav-item layout-padding">
   <article class="card-container article-nav-card content-padding--primary soft-size--large soft-style--box">
     
     <div class="card-text">
       
-        <a href="/2019/08/07/K%E8%BF%91%E9%82%BB%E7%AE%97%E6%B3%95%EF%BC%88python%EF%BC%89/" itemprop="url">
-          <h2 class="card-text--title text-ellipsis">K邻近算法</h2>
+        <a href="/2021/08/07/hexo%E5%92%8Cgithub%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2/" itemprop="url">
+          <h2 class="card-text--title text-ellipsis">(no title)</h2>
         </a>
       
       <div class="card-text--row">Older</div>
