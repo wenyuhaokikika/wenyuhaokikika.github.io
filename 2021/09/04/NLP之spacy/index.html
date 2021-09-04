@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="theme-color" content="#3367D6"/>
+  <link rel="apple-touch-icon" href="/icons-192.png">
+  <link rel="manifest" href="/manifest.json">
+  
+  <meta name="generator" content="Hexo 5.4.0">
+
+  
+    <meta name="description" content="生物信息学">
+  
+
+  
+
+  
+    <meta name="author" content="wenyuhao">
+  
+
+  
+
+  
+
+  <title>NLP之spacy | 文玉昊</title>
+
+  
+
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@1.1.3/index.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlightjs@9.16.2/styles/monokai.css">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body>
+  <div class="root-container">
+    
+<!-- header container -->
+<header class="header-container post">
+  
+    <div class="post-image" style="background-image: url(/68686407_p0.jpg)"></div>
+  
+
+  <!-- navbar -->
+<nav class="navbar">
+  <div class="navbar-content">
+    <!-- logo -->
+    <div class="navbar-logo">
+      <a href="/">
+        
+          文玉昊
+        
+      </a>
+    </div>
+    <!-- link -->
+    <div class="navbar-link">
+      <div class="navbar-btn">
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      <ul class="navbar-list">
+        
+          <li class="navbar-list-item"><a href="/">首页</a></li>
+        
+          <li class="navbar-list-item"><a href="/about">关于</a></li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+    <div class="header-content">
+      <div class="post-text layout-block">
+        <div class="layout-margin">
+          <h1 class="title-wrap">NLP之spacy</h1>
+          <h2 class="title-sub-wrap">
+            <strong>wenyuhao</strong>
+            <span>发布于</span>
+            <time  class="article-date" datetime="2021-09-04T05:15:10.000Z" itemprop="datePublished">2021-09-04</time>
+          </h2>
+          <ul class="wrap-list dark">
+  
+    <li><a href="/categories/NLP/">📒 NLP</a></li>
+  
+</ul>
+          <ul class="wrap-list dark">
+  
+    <li><a href="/tags/%E8%BF%98%E6%B2%A1%E6%9C%89%E5%AE%8C%E6%88%90/">🏷️ 还没有完成</a></li>
+  
+</ul>
+        </div>
+      </div>
+    </div>
+  
+
+  
+  
+  
+</header>
+
+    <!-- 文章 -->
+
+<!-- 文章内容 -->
+<div class="body-container">
+  <article class="content-container layout-block post-container">
+    <div class="article-info">
+      
+      
+      
+      
+      <section class="article-entry markdown-body layout-margin content-padding--large soft-size--large soft-style--box">
+        <p>NLP中的transform：<a target="_blank" rel="noopener" href="https://github.com/explosion/spacy-transformers">spacy-transformers</a></p>
+<p>PyDictionary可以找打词的同义词和翻译</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> PyDictionary <span class="keyword">import</span> PyDictionary</span><br><span class="line">dictionary=PyDictionary()</span><br><span class="line">dictionary.meaning(<span class="string">&quot;indentation&quot;</span>)</span><br><span class="line"></span><br><span class="line">dictionary=PyDictionary(<span class="string">&quot;hotel&quot;</span>,<span class="string">&quot;ambush&quot;</span>,<span class="string">&quot;nonchalant&quot;</span>,<span class="string">&quot;perceptive&quot;</span>)</span><br><span class="line">dictionary.getMeanings() <span class="string">&#x27;&#x27;&#x27;This will return meanings as dictionaries&#x27;&#x27;&#x27;</span></span><br><span class="line">dictionary.getSynonyms()</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://github.com/tasdikrahman/vocabulary">vocabulary</a>    提供翻译同义词，meaning等功能。</p>
+<p>spacy 模型的地址：<a target="_blank" rel="noopener" href="https://github.com/explosion/spacy-models%EF%BC%8C%E6%AF%8F%E4%B8%AA%E6%A8%A1%E5%9E%8B%E8%AF%A6%E7%BB%86%E4%BB%8B%E7%BB%8Dhttps://spacy.io/usage/models">https://github.com/explosion/spacy-models，每个模型详细介绍https://spacy.io/usage/models</a></p>
+<p>下载模型<code>pip install -U spacypython -m spacy download en_core_web_sm</code>.</p>
+<p>基本操作</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> spacy</span><br><span class="line">nlp = spacy.load(<span class="string">&quot;en_core_web_sm&quot;</span>)</span><br><span class="line"><span class="comment">#级联顺序是</span></span><br><span class="line">sents_list = []<span class="comment">#将一段拆分为句子</span></span><br><span class="line"><span class="keyword">for</span> snt <span class="keyword">in</span> nlp(paper[<span class="string">&#x27;content&#x27;</span>]).sents:</span><br><span class="line">    sents_list.append(snt)</span><br><span class="line"><span class="comment">#将句子拆分为词</span></span><br><span class="line"><span class="built_in">print</span>([token.text <span class="keyword">for</span> token <span class="keyword">in</span> sents_list[<span class="number">0</span>]])</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">lambda</span> x:re.sub(<span class="string">r&#x27;&lt;script.*?/script&gt;&#x27;</span>,<span class="string">&#x27;&#x27;</span>,x.replace(<span class="string">&#x27;\r\n&#x27;</span>,<span class="string">&#x27;&#x27;</span>).replace(<span class="string">&#x27;\n&#x27;</span>,<span class="string">&#x27;&#x27;</span>))<span class="comment">#去掉js</span></span><br><span class="line"><span class="keyword">lambda</span> x:re.sub(<span class="string">r&#x27;&lt;style.*?/style&gt;&#x27;</span>,<span class="string">&#x27;&#x27;</span>,x)<span class="comment">#去掉css</span></span><br><span class="line"><span class="keyword">import</span> html2text</span><br><span class="line"><span class="keyword">lambda</span> x:html2text.html2text(x)<span class="comment">#将html格式转化为文本格式</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>pos的缩写代表的意思</p>
+<table>
+<thead>
+<tr>
+<th align="left">POS Tag</th>
+<th align="right">Description</th>
+<th align="right">Example</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">0</td>
+<td align="right">CC</td>
+<td align="right">coordinating conjunction</td>
+<td>and</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="right">CD</td>
+<td align="right">cardinal number</td>
+<td>1, third</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="right">DT</td>
+<td align="right">determiner</td>
+<td>the</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="right">EX</td>
+<td align="right">existential there</td>
+<td>there, is</td>
+</tr>
+<tr>
+<td align="left">4</td>
+<td align="right">FW</td>
+<td align="right">foreign word</td>
+<td>d’hoevre</td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="right">IN</td>
+<td align="right">preposition or subordinating conjunction</td>
+<td>in, of, like</td>
+</tr>
+<tr>
+<td align="left">6</td>
+<td align="right">JJ</td>
+<td align="right">adjective</td>
+<td>big</td>
+</tr>
+<tr>
+<td align="left">7</td>
+<td align="right">JJR</td>
+<td align="right">adjective, comparative</td>
+<td>bigger</td>
+</tr>
+<tr>
+<td align="left">8</td>
+<td align="right">JJS</td>
+<td align="right">adjective, superlative</td>
+<td>biggest</td>
+</tr>
+<tr>
+<td align="left">9</td>
+<td align="right">LS</td>
+<td align="right">list marker</td>
+<td>1)</td>
+</tr>
+<tr>
+<td align="left">10</td>
+<td align="right">MD</td>
+<td align="right">modal</td>
+<td>could, will</td>
+</tr>
+<tr>
+<td align="left">11</td>
+<td align="right">NN</td>
+<td align="right">noun, singular or mass</td>
+<td>door</td>
+</tr>
+<tr>
+<td align="left">12</td>
+<td align="right">NNS</td>
+<td align="right">noun plural</td>
+<td>doors</td>
+</tr>
+<tr>
+<td align="left">13</td>
+<td align="right">NNP</td>
+<td align="right">proper noun, singular</td>
+<td>John</td>
+</tr>
+<tr>
+<td align="left">14</td>
+<td align="right">NNPS</td>
+<td align="right">proper noun, plural</td>
+<td>Vikings</td>
+</tr>
+<tr>
+<td align="left">15</td>
+<td align="right">PDT</td>
+<td align="right">predeterminer</td>
+<td>both the boys</td>
+</tr>
+<tr>
+<td align="left">16</td>
+<td align="right">POS</td>
+<td align="right">possessive ending</td>
+<td>friend‘s</td>
+</tr>
+<tr>
+<td align="left">17</td>
+<td align="right">PRP</td>
+<td align="right">personal pronoun</td>
+<td>I, he, it</td>
+</tr>
+<tr>
+<td align="left">18</td>
+<td align="right">PRP$</td>
+<td align="right">possessive pronoun</td>
+<td>my, his</td>
+</tr>
+<tr>
+<td align="left">19</td>
+<td align="right">RB</td>
+<td align="right">adverb</td>
+<td>however, usually, naturally, here, good</td>
+</tr>
+<tr>
+<td align="left">20</td>
+<td align="right">RBR</td>
+<td align="right">adverb, comparative</td>
+<td>better</td>
+</tr>
+<tr>
+<td align="left">21</td>
+<td align="right">RBS</td>
+<td align="right">adverb, superlative</td>
+<td>best</td>
+</tr>
+<tr>
+<td align="left">22</td>
+<td align="right">RP</td>
+<td align="right">particle</td>
+<td>give up</td>
+</tr>
+<tr>
+<td align="left">23</td>
+<td align="right">TO</td>
+<td align="right">to</td>
+<td>to go, to him</td>
+</tr>
+<tr>
+<td align="left">24</td>
+<td align="right">UH</td>
+<td align="right">interjection</td>
+<td>uhhuhhuhh</td>
+</tr>
+<tr>
+<td align="left">25</td>
+<td align="right">VB</td>
+<td align="right">verb, base form</td>
+<td>take</td>
+</tr>
+<tr>
+<td align="left">26</td>
+<td align="right">VBD</td>
+<td align="right">verb, past tense</td>
+<td>took</td>
+</tr>
+<tr>
+<td align="left">27</td>
+<td align="right">VBG</td>
+<td align="right">verb, gerund or present participle</td>
+<td>taking</td>
+</tr>
+<tr>
+<td align="left">28</td>
+<td align="right">VBN</td>
+<td align="right">verb, past participle</td>
+<td>taken</td>
+</tr>
+<tr>
+<td align="left">29</td>
+<td align="right">VBP</td>
+<td align="right">verb, sing. present, non-3d</td>
+<td>take</td>
+</tr>
+<tr>
+<td align="left">30</td>
+<td align="right">VBZ</td>
+<td align="right">verb, 3rd person sing. present</td>
+<td>takes</td>
+</tr>
+<tr>
+<td align="left">31</td>
+<td align="right">WDT</td>
+<td align="right">wh-determiner</td>
+<td>which</td>
+</tr>
+<tr>
+<td align="left">32</td>
+<td align="right">WP</td>
+<td align="right">wh-pronoun</td>
+<td>who, what</td>
+</tr>
+<tr>
+<td align="left">33</td>
+<td align="right">WP$</td>
+<td align="right">possessive wh-pronoun</td>
+<td>whose</td>
+</tr>
+<tr>
+<td align="left">34</td>
+<td align="right">WRB</td>
+<td align="right">wh-abverb</td>
+<td>where, when</td>
+</tr>
+</tbody></table>
+<p>对应的表格<a target="_blank" rel="noopener" href="https://github.com/clir/clearnlp-guidelines/blob/master/md/specifications/dependency_labels.md">https://github.com/clir/clearnlp-guidelines/blob/master/md/specifications/dependency_labels.md</a></p>
+<p>形态morphology ：就是词语的词根不会变化，而多了前缀和后缀修饰。比方说一个动词有过去式，现在进行时和过去完成时，这些都认为他有一个词根。</p>
+<p>每个句子(nlp对象)包含单词，单词由是morphology对象</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> spacy.morphology <span class="keyword">import</span> Morphology</span><br><span class="line">morphology = Morphology(strings)</span><br><span class="line"></span><br><span class="line">feats = <span class="string">&quot;Feat1=Val1|Feat2=Val2&quot;</span></span><br><span class="line"><span class="built_in">hash</span> = nlp.vocab.morphology.add(feats)</span><br><span class="line"><span class="keyword">assert</span> nlp.vocab.morphology.get(<span class="built_in">hash</span>) == feats</span><br><span class="line"></span><br><span class="line">d = Morphology.feats_to_dict(<span class="string">&quot;Feat1=Val1|Feat2=Val2&quot;</span>)</span><br><span class="line"><span class="keyword">assert</span> d == &#123;<span class="string">&quot;Feat1&quot;</span>: <span class="string">&quot;Val1&quot;</span>, <span class="string">&quot;Feat2&quot;</span>: <span class="string">&quot;Val2&quot;</span>&#125;</span><br><span class="line"></span><br><span class="line">f = Morphology.dict_to_feats(&#123;<span class="string">&quot;Feat1&quot;</span>: <span class="string">&quot;Val1&quot;</span>, <span class="string">&quot;Feat2&quot;</span>: <span class="string">&quot;Val2&quot;</span>&#125;)</span><br><span class="line"><span class="keyword">assert</span> f == <span class="string">&quot;Feat1=Val1|Feat2=Val2&quot;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="kindred"><a href="#kindred" class="headerlink" title="kindred"></a>kindred</h2><p>这是一个专门处理医学文献的NLP库。</p>
+<p>kindred提供根据pmid下载文章的函数<code>kindred.pubtator.load(pmids)</code>,但是这个很不好用，会报错<code>RuntimeError: Unable to download PubTator data after 3 retries</code>,就是pubmed</p>
+<h2 id="textacy"><a href="#textacy" class="headerlink" title="textacy"></a>textacy</h2><p>数据预处理模块</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> textacy <span class="keyword">import</span> preprocessing</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>preprocessing.normalize.whitespace(preprocessing.remove.punctuation(text))[:<span class="number">80</span>]</span><br><span class="line"><span class="string">&#x27;Since the so called statistical revolution in the late 1980s and mid 1990s much &#x27;</span></span><br><span class="line"><span class="comment">#实例化sapcy doc</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>doc = textacy.make_spacy_doc(text,<span class="string">&#x27;en_core_web_sm&#x27;</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>doc._.preview</span><br><span class="line"><span class="string">&#x27;Doc(85 tokens: &quot;Since the so-called &quot;statistical revolution&quot; in...&quot;)&#x27;</span></span><br><span class="line">doc._.meta</span><br><span class="line"></span><br><span class="line"><span class="comment">#基础操作</span></span><br><span class="line">corpus = textacy.Corpus(<span class="string">&quot;en_core_web_sm&quot;</span>, data=records)<span class="comment">#实例化corpus</span></span><br><span class="line">corpus.add(texts);corpus.remove(<span class="keyword">lambda</span> doc: doc._.meta.get(<span class="string">&quot;speaker_name&quot;</span>) == <span class="string">&quot;Rick Santorum&quot;</span>)<span class="comment">#添加和删除</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>match_func = <span class="keyword">lambda</span> doc: doc._.meta.get(<span class="string">&quot;speaker_name&quot;</span>) == <span class="string">&quot;Bernie Sanders&quot;</span><span class="comment">#根据函数切片</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">for</span> doc <span class="keyword">in</span> corpus.get(match_func, limit=<span class="number">3</span>):</span><br><span class="line"><span class="meta">... </span>    <span class="built_in">print</span>(doc._.preview)</span><br><span class="line">Doc(<span class="number">159</span> tokens: <span class="string">&quot;Mr. Speaker, 480,000 Federal employees are work...&quot;</span>)</span><br><span class="line">Doc(<span class="number">336</span> tokens: <span class="string">&quot;Mr. Speaker, I thank the gentleman for yielding...&quot;</span>)</span><br><span class="line">Doc(<span class="number">177</span> tokens: <span class="string">&quot;Mr. Speaker, if we want to understand why in th...&quot;</span>)</span><br><span class="line"><span class="comment">#进行简单的统计分析</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>corpus.n_docs, corpus.n_sents, corpus.n_tokens</span><br><span class="line">(<span class="number">56</span>, <span class="number">1771</span>, <span class="number">41573</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>word_counts = corpus.word_counts(by=<span class="string">&quot;lemma_&quot;</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">sorted</span>(word_counts.items(), key=<span class="keyword">lambda</span> x: x[<span class="number">1</span>], reverse=<span class="literal">True</span>)[:<span class="number">5</span>]</span><br><span class="line">[(<span class="string">&#x27;-PRON-&#x27;</span>, <span class="number">2553</span>), (<span class="string">&#x27;people&#x27;</span>, <span class="number">215</span>), (<span class="string">&#x27;year&#x27;</span>, <span class="number">148</span>), (<span class="string">&#x27;Mr.&#x27;</span>, <span class="number">139</span>), (<span class="string">&#x27;$&#x27;</span>, <span class="number">137</span>)]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>word_doc_counts = corpus.word_doc_counts(by=<span class="string">&quot;lemma_&quot;</span>, weighting=<span class="string">&quot;freq&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">list</span>(textacy.extract.ngrams(doc, <span class="number">3</span>, filter_stops=<span class="literal">True</span>, filter_punct=<span class="literal">True</span>, filter_nums=<span class="literal">False</span>))</span><br><span class="line"><span class="comment">#这里的3是window大小</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#找句子中间的关键词的算法	</span></span><br><span class="line"><span class="keyword">from</span> textacy.extract <span class="keyword">import</span> keyterms <span class="keyword">as</span> kt</span><br><span class="line">kt.textrank(doc, normalize=<span class="string">&quot;lemma&quot;</span>, topn=<span class="number">10</span>)</span><br><span class="line">kt.sgrank(doc, ngrams=(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>), normalize=<span class="string">&quot;lower&quot;</span>, topn=<span class="number">0.1</span>)<span class="comment">#感觉sgrank会更有效率一些</span></span><br><span class="line"><span class="keyword">assert</span> hh==<span class="string">&#x27;Prostaglandin E2 (PGE2) interacts with tyrosine kinases receptor signaling in both tumor and stromal cells supporting tumor progression.&#x27;</span></span><br><span class="line">textacy.extract.keyterms.sgrank(hh)</span><br><span class="line">&gt;&gt;&gt;[(<span class="string">&#x27;tyrosine kinase receptor&#x27;</span>, <span class="number">0.4217308427210148</span>),</span><br><span class="line"> (<span class="string">&#x27;prostaglandin E2&#x27;</span>, <span class="number">0.16628512295344672</span>),</span><br><span class="line"> (<span class="string">&#x27;stromal cell&#x27;</span>, <span class="number">0.11715540305665428</span>),</span><br><span class="line"> (<span class="string">&#x27;tumor progression&#x27;</span>, <span class="number">0.11348381294556975</span>),</span><br><span class="line"> (<span class="string">&#x27;PGE2&#x27;</span>, <span class="number">0.08474522854970501</span>)]</span><br><span class="line">textacy.extract.keyterms.textrank(hh)</span><br><span class="line">&gt;&gt;&gt;[(<span class="string">&#x27;tyrosine kinase receptor&#x27;</span>, <span class="number">0.14942925583327316</span>),</span><br><span class="line"> (<span class="string">&#x27;tumor progression&#x27;</span>, <span class="number">0.13997039482865523</span>),</span><br><span class="line"> (<span class="string">&#x27;stromal cell&#x27;</span>, <span class="number">0.09483809672182696</span>),</span><br><span class="line"> (<span class="string">&#x27;prostaglandin E2&#x27;</span>, <span class="number">0.0900362546238346</span>),</span><br><span class="line"> (<span class="string">&#x27;PGE2&#x27;</span>, <span class="number">0.05244106830477502</span>)]</span><br><span class="line">textacy.extract.keyterms.yake(hh)</span><br><span class="line">&gt;&gt;&gt;[(<span class="string">&#x27;prostaglandin E2&#x27;</span>, <span class="number">0.5032452124985934</span>),</span><br><span class="line"> (<span class="string">&#x27;PGE2&#x27;</span>, <span class="number">0.5566998721996959</span>),</span><br><span class="line"> (<span class="string">&#x27;tumor&#x27;</span>, <span class="number">0.578886787744827</span>),</span><br><span class="line"> (<span class="string">&#x27;progression&#x27;</span>, <span class="number">0.7021147266509096</span>),</span><br><span class="line"> (<span class="string">&#x27;tyrosine&#x27;</span>, <span class="number">0.8578316139578024</span>),</span><br><span class="line"> (<span class="string">&#x27;kinase&#x27;</span>, <span class="number">0.8578316139578024</span>),</span><br><span class="line"> (<span class="string">&#x27;receptor&#x27;</span>, <span class="number">0.8578316139578024</span>),</span><br><span class="line"> (<span class="string">&#x27;stromal&#x27;</span>, <span class="number">0.8578316139578024</span>),</span><br><span class="line"> (<span class="string">&#x27;cell&#x27;</span>, <span class="number">0.8578316139578024</span>),</span><br><span class="line"> (<span class="string">&#x27;tumor progression&#x27;</span>, <span class="number">1.8105676281183678</span>)]</span><br><span class="line">textacy.extract.keyterms.scake(hh)</span><br><span class="line">&gt;&gt;&gt;[(<span class="string">&#x27;prostaglandin E2&#x27;</span>, <span class="number">120.0</span>),</span><br><span class="line"> (<span class="string">&#x27;tyrosine kinase receptor&#x27;</span>, <span class="number">26.88888888888889</span>),</span><br><span class="line"> (<span class="string">&#x27;tumor progression&#x27;</span>, <span class="number">21.864661654135336</span>),</span><br><span class="line"> (<span class="string">&#x27;PGE2&#x27;</span>, <span class="number">20.0</span>),</span><br><span class="line"> (<span class="string">&#x27;stromal cell&#x27;</span>, <span class="number">9.705882352941178</span>)]</span><br><span class="line"></span><br><span class="line"><span class="comment">#读取句子每行一个</span></span><br><span class="line">texts = textacy.io.read_text(<span class="string">&#x27;~/Desktop/burton-tweets.txt&#x27;</span>, lines=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">## 分析Corpus 这里理解为doc是一个句子，corpus是一句话</span></span><br><span class="line"><span class="comment">#实例化corpus</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>corpus = textacy.Corpus(<span class="string">&quot;en&quot;</span>, data=records)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>corpus</span><br><span class="line">Corpus(<span class="number">1240</span> docs, <span class="number">857548</span> tokens)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>corpus.n_docs, corpus.n_sents, corpus.n_tokens</span><br><span class="line">(<span class="number">1240</span>, <span class="number">34530</span>, <span class="number">857548</span>)</span><br><span class="line"><span class="comment">#import textacy.vsm 这个导入不了 在新版本中已经换了</span></span><br><span class="line">textacy.representations.vectorizers.Vectorizer</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>主要的部分有: information extraction,text statistics,document similarity,data augmentation.</p>
+<p>对extract部分比较感兴趣说一下这里的<a target="_blank" rel="noopener" href="https://textacy.readthedocs.io/en/latest/api_reference/extract.html">API</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">textacy.extract.triples.subject_verb_object_triples(doc)<span class="comment">#可以找到句子中的主谓宾语</span></span><br><span class="line">[i <span class="keyword">for</span> i <span class="keyword">in</span>  subject_verb_object_triples(doc)]</span><br><span class="line">[SVOTriple(subject=[It], verb=[was, founded], <span class="built_in">object</span>=[Romans]),</span><br><span class="line"> SVOTriple(subject=[who], verb=[named], <span class="built_in">object</span>=[it])]</span><br><span class="line"></span><br><span class="line"><span class="comment">#提取缩略词，在我看来不太准</span></span><br><span class="line">hh=nlp(<span class="string">&#x27;Prostaglandin E2 (PGE2) interacts with tyrosine kinases receptor signaling in both tumor and stromal cells supporting tumor progression.&#x27;</span>)</span><br><span class="line"><span class="built_in">list</span>(textacy.extract.acros.acronyms(hh))<span class="comment">#para known_acro_defs如果有不会去找新的字典</span></span><br><span class="line">[E2, PGE2]</span><br><span class="line">textacy.extract.acros.acronyms_and_definitions(hh)</span><br><span class="line">&#123;<span class="string">&#x27;E2&#x27;</span>: <span class="string">&#x27;&#x27;</span>, <span class="string">&#x27;PGE2&#x27;</span>: <span class="string">&#x27;&#x27;</span>&#125;</span><br><span class="line">[textacy.extract.acros.is_acronym(i) <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="string">&#x27;like&#x27;</span>,<span class="string">&#x27;E2&#x27;</span>]]</span><br><span class="line">[<span class="literal">False</span>, <span class="literal">True</span>]</span><br></pre></td></tr></table></figure>
+
+<p>主题模型是提取文本，计算抽象主题相似性的一种统计学模型。用了sklearn的 LSA, LDA, and NMF models 三个模型并将他们用到矢量化文本。</p>
+
+      </section>
+
+      
+      
+        <nav class="article-nav">
+          
+          
+            <div class="article-nav-item layout-padding">
+  <article class="card-container article-nav-card content-padding--primary soft-size--large soft-style--box">
+    
+    <div class="card-text">
+      
+        <a href="/2021/08/22/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/" itemprop="url">
+          <h2 class="card-text--title text-ellipsis">正则表达式</h2>
+        </a>
+      
+      <div class="card-text--row">Older</div>
+    </div>
+  </article>
+</div>
+          
+        </nav>
+      
+
+      <section class="page-message-container layout-padding">
+        
+
+
+  
+  
+    <div class="valine-container comments-container content-padding--primary soft-size--large soft-style--box">
+      <div id="valine_thread" class="valine-thread"></div>
+    </div>
+    <script type="text/javascript" src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+    <script type="text/javascript" src='//unpkg.com/valine/dist/Valine.min.js'></script>
+    <script type="text/javascript">
+      new Valine({
+        el: "#valine_thread",
+        appId: "BtOHIKzoGxULPgP2lD9JcPyH-gzGzoHsz",
+        appKey: "jxhsU3oONoDenXtjQCLhWf4B",
+        avatar: "mm",
+        placeholder: "随便说点什么叭～",
+        notify: false,
+        visitor: false,
+        pageSize: 10,
+      });
+    </script>
+  
+
+  
+  
+
+
+      </section>
+    </div>
+    <div class="widget-info">
+      <section class="widget-author widget-item layout-margin content-padding--primary soft-size--large soft-style--box">
+  <div class="widget-body">
+    
+      <img src="https://avatars.githubusercontent.com/u/40107519?v=4" class="soft-size--round soft-style--box" alt="wenyuhao">
+    
+    
+      <h2>wenyuhao</h2>
+    
+    
+      <p>生物信息学</p>
+    
+
+    <div class="count-box">
+      <div class="count-box--item">
+        <svg class="icon icon-article" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M240.51564747 647.74217627h196.07203239c16.59071043 0 30.16492806-13.57421762 30.16492805-30.16492806V165.10332731c0-33.18142087-30.16492806-60.32985613-60.32985612-60.32985611H245.04038668C225.43318342 104.7734712 210.35071939 119.85593522 210.35071939 139.46313845V617.57724821c0 16.59071043 13.57421762 30.16492806 30.16492808 30.16492806z m663.62841731-452.47392089v482.63884894c0 33.18142087-27.14843525 60.32985613-60.32985612 60.32985613H180.18579134c-33.18142087 0-60.32985613-27.14843525-60.32985612-60.32985613V195.26825538c-49.77213131 0-90.49478418 40.72265287-90.49478417 90.49478417v452.4739209c0 49.77213131 40.72265287 90.49478418 90.49478417 90.49478417h286.56681657c16.59071043 0 30.16492806 13.57421762 30.16492807 30.16492807s13.57421762 30.16492806 30.16492805 30.16492806h90.49478418c16.59071043 0 30.16492806-13.57421762 30.16492805-30.16492806s13.57421762-30.16492806 30.16492807-30.16492807h286.56681657c49.77213131 0 90.49478418-40.72265287 90.49478417-90.49478417V285.76303955c0-49.77213131-40.72265287-90.49478418-90.49478417-90.49478417zM587.41232014 647.74217627h191.54729318c19.60720323 0 34.68966726-15.08246403 34.68966729-34.68966727V134.93839925c0-16.59071043-13.57421762-30.16492806-30.16492808-30.16492805H617.57724821c-30.16492806 0-60.32985613 27.14843525-60.32985612 60.32985611v452.4739209c0 16.59071043 13.57421762 30.16492806 30.16492805 30.16492806z" fill="currentColor"></path>
+</svg>
+        <span>11</span>
+      </div>
+      <div class="count-box--item">
+        <svg class="icon icon-categories" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M900.3614811 257.09082106h-339.81629553l-67.96326003-101.9448889c-19.41807444-29.12711113-48.54518557-43.69066667-82.52681443-43.69066667H123.6385189c-53.39970333 0-97.09036999 43.69066667-97.09037113 97.09036999v582.54222222c0 53.39970333 43.69066667 97.09036999 97.09037113 97.09037002h776.7229622c53.39970333 0 97.09036999-43.69066667 97.09037113-97.09037002V354.18119104c0-53.39970333-43.69066667-97.09036999-97.09037113-97.09036998z m-97.09036999 242.72592554H220.72888889c-24.27259221 0-48.54518557-24.27259221-48.54518556-48.54518556s24.27259221-48.54518557 48.54518556-48.54518444h582.54222222c24.27259221 0 48.54518557 24.27259221 48.54518556 48.54518444s-24.27259221 48.54518557-48.54518556 48.54518556z" fill="currentColor"></path>
+</svg>
+        4
+      </div>
+      <div class="count-box--item">
+        <svg class="icon icon-tags" viewBox="0 0 1098 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M283.42180005 272q0-28.38857157-20.09142843-48.48000001t-48.47999998-20.09142842-48.48000002 20.09142842-20.09142846 48.48000001 20.09142846 48.48 48.48000002 20.09142843 48.47999998-20.09142843 20.09142843-48.48zM855.0332285 580.57142843q0 28.38857157-19.81714313 48.2057147l-263.03999997 263.58857157q-20.9142853 19.81714313-48.75428534 19.81714312-28.38857157 0-48.20571468-19.81714312l-383.04-383.58857157q-20.36571468-19.81714313-34.55999999-54.10285688t-14.19428534-62.6742853l0-222.85714313q0-27.84000002 20.36571469-48.20571469t48.2057147-20.36571466l222.85714313 0q28.38857157 0 62.6742853 14.19428529t54.65142842 34.55999999l383.04000001 382.49142843q19.81714313 20.9142853 19.81714314 48.75428532zM1060.74751475 580.57142843q0 28.38857157-19.81714313 48.2057147l-263.04 263.58857157q-20.9142853 19.81714313-48.75428531 19.81714312-19.26857155 0-31.61142843-7.47428531t-28.38857159-24.13714314l251.79428534-251.7942853q19.81714313-19.81714313 19.81714308-48.20571469 0-27.84000002-19.81714308-48.75428531l-383.04000001-382.49142845q-20.36571468-20.36571468-54.65142842-34.55999999t-62.67428532-14.19428534l120 0q28.38857157 0 62.67428532 14.19428534t54.65142842 34.55999999l383.03999998 382.49142845q19.81714313 20.9142853 19.81714314 48.75428531z" fill="currentColor"></path>
+</svg>
+        2
+      </div>
+    </div>
+  </div>
+</section>
+
+      
+
+      
+<section class="widet-notice widget-item layout-margin content-padding--primary soft-size--large soft-style--box">
+  <div class="widget-title">
+    <svg class="icon icon-notice" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M512 945.02305225v28.15620663a24.27259221 24.27259221 0 0 1-24.27259221 24.27259335H394.0352a48.54518557 48.54518557 0 0 1-41.74885888-23.78714112l-110.68302222-184.47170332a132.04290333 132.04290333 0 0 1-17.47626667-48.54518557h118.4502511a200.97706667 200.97706667 0 0 1 76.21594113 14.56355556l20.38897777 133.49925888a48.54518557 48.54518557 0 0 0 36.40888888 27.67075555l16.01991111 2.91271112a24.27259221 24.27259221 0 0 1 20.38897778 25.72894889zM997.45185223 463.45481443a194.18074112 194.18074112 0 0 1-38.8361489 116.50844445 24.75804445 24.75804445 0 0 1-36.4088889 0l-34.95253333-34.95253333a24.27259221 24.27259221 0 0 1-2.91271111-30.58346667 97.09036999 97.09036999 0 0 0 0-106.79940665 24.27259221 24.27259221 0 0 1 2.91271111-30.58346666l34.95253333-34.95253334a24.75804445 24.75804445 0 0 1 18.93262223-7.28177777 26.2144 26.2144 0 0 1 17.47626667 9.70903665A194.18074112 194.18074112 0 0 1 997.45185223 463.45481443z m-194.18074112-388.36148111v776.72296335a48.54518557 48.54518557 0 0 1-48.54518556 48.54518443h-28.64165888a48.54518557 48.54518557 0 0 1-33.98163001-14.07810332l-145.63555556-143.20829668A291.27111111 291.27111111 0 0 0 342.57730333 657.63555556H172.18370333a145.63555556 145.63555556 0 0 1-145.63555556-145.63555556v-97.09036999a145.63555556 145.63555556 0 0 1 145.63555556-145.63555556h170.3936a291.27111111 291.27111111 0 0 0 206.31703779-85.43952668l145.63555555-143.20829554a48.54518557 48.54518557 0 0 1 33.98162888-14.07810446H754.72592555a48.54518557 48.54518557 0 0 1 48.54518556 48.54518555z" fill="currentColor"></path>
+</svg>
+    <span>NOTICE</span>
+  </div>
+  <div class="widget-body">
+    <p>qq 3484905018</p>
+  </div>
+</section>
+
+
+      <section class="widget-categorys widget-item layout-margin content-padding--primary soft-size--large soft-style--box">
+  <div class="widget-title">
+    <svg class="icon icon-categories" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M900.3614811 257.09082106h-339.81629553l-67.96326003-101.9448889c-19.41807444-29.12711113-48.54518557-43.69066667-82.52681443-43.69066667H123.6385189c-53.39970333 0-97.09036999 43.69066667-97.09037113 97.09036999v582.54222222c0 53.39970333 43.69066667 97.09036999 97.09037113 97.09037002h776.7229622c53.39970333 0 97.09036999-43.69066667 97.09037113-97.09037002V354.18119104c0-53.39970333-43.69066667-97.09036999-97.09037113-97.09036998z m-97.09036999 242.72592554H220.72888889c-24.27259221 0-48.54518557-24.27259221-48.54518556-48.54518556s24.27259221-48.54518557 48.54518556-48.54518444h582.54222222c24.27259221 0 48.54518557 24.27259221 48.54518556 48.54518444s-24.27259221 48.54518557-48.54518556 48.54518556z" fill="currentColor"></path>
+</svg>
+    <span>CATEGORYS</span>
+  </div>
+  <div class="widget-body">
+    <ul class="categorys-list">
+      
+        <li class="categorys-list-item">
+          <a href="/categories/web-%E5%BC%80%E5%8F%91/">
+            web 开发 (3)
+          </a>
+        </li>
+      
+        <li class="categorys-list-item">
+          <a href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">
+            数据分析 (3)
+          </a>
+        </li>
+      
+        <li class="categorys-list-item">
+          <a href="/categories/%E9%9A%8F%E7%AC%94/">
+            随笔 (3)
+          </a>
+        </li>
+      
+        <li class="categorys-list-item">
+          <a href="/categories/NLP/">
+            NLP (1)
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+</section>
+
+      <section class="widget-tags widget-item  layout-margin content-padding--primary soft-size--large soft-style--box">
+  <div class="widget-title">
+    <svg class="icon icon-tags" viewBox="0 0 1098 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M283.42180005 272q0-28.38857157-20.09142843-48.48000001t-48.47999998-20.09142842-48.48000002 20.09142842-20.09142846 48.48000001 20.09142846 48.48 48.48000002 20.09142843 48.47999998-20.09142843 20.09142843-48.48zM855.0332285 580.57142843q0 28.38857157-19.81714313 48.2057147l-263.03999997 263.58857157q-20.9142853 19.81714313-48.75428534 19.81714312-28.38857157 0-48.20571468-19.81714312l-383.04-383.58857157q-20.36571468-19.81714313-34.55999999-54.10285688t-14.19428534-62.6742853l0-222.85714313q0-27.84000002 20.36571469-48.20571469t48.2057147-20.36571466l222.85714313 0q28.38857157 0 62.6742853 14.19428529t54.65142842 34.55999999l383.04000001 382.49142843q19.81714313 20.9142853 19.81714314 48.75428532zM1060.74751475 580.57142843q0 28.38857157-19.81714313 48.2057147l-263.04 263.58857157q-20.9142853 19.81714313-48.75428531 19.81714312-19.26857155 0-31.61142843-7.47428531t-28.38857159-24.13714314l251.79428534-251.7942853q19.81714313-19.81714313 19.81714308-48.20571469 0-27.84000002-19.81714308-48.75428531l-383.04000001-382.49142845q-20.36571468-20.36571468-54.65142842-34.55999999t-62.67428532-14.19428534l120 0q28.38857157 0 62.67428532 14.19428534t54.65142842 34.55999999l383.03999998 382.49142845q19.81714313 20.9142853 19.81714314 48.75428531z" fill="currentColor"></path>
+</svg>
+    <span>TAGS</span>
+  </div>
+  <div class="widget-body">
+    <div class="tags-cloud">
+      <a href="/tags/%E5%AE%8C%E6%88%90/" style="font-size: 20px;" class="tags-cloud-10">完成</a> <a href="/tags/%E8%BF%98%E6%B2%A1%E6%9C%89%E5%AE%8C%E6%88%90/" style="font-size: 10px;" class="tags-cloud-0">还没有完成</a>
+    </div>
+  </div>
+</section>
+    </div>
+  </article>
+</div>
+
+    <!-- footer container -->
+<footer id="footer" class="footer">
+  <div class="footer-container">
+    
+    <div class="social-icons">
+      
+        
+      
+        
+          <a href="https://www.zhihu.com/people/xing-zhe-80-14" class="soft-size--primary soft-style--box" target="_blank" rel="noopener noreferrer">
+            <svg t="1587373160860" class="icon icon-zhihu" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M544.949 561.422s0-71.387-34.779-75.050c-34.779-3.663-142.775 0-142.775 0v-219.654h161.078s-1.83-73.219-32.949-73.219h-261.755l43.93-117.148s-65.897 3.663-89.692 45.761-98.844 252.604-98.844 252.604 25.627 10.983 67.726-20.134c42.101-31.116 56.743-86.033 56.743-86.033l76.879-3.663 1.83 223.316s-133.621-1.83-161.078 0c-27.457 1.83-42.101 75.050-42.101 75.050h203.182s-18.307 124.47-69.557 214.164c-53.085 89.692-151.929 161.078-151.929 161.078s71.387 29.287 140.947-10.983c69.557-42.101 120.811-223.316 120.811-223.316l162.912 203.182s14.643-97.013-1.83-124.47c-18.307-27.457-113.49-137.283-113.49-137.283l-42.101 36.607 29.287-120.811h177.552zM587.050 188.010l-1.83 660.793h65.897l23.795 82.37 115.321-82.37h162.912v-660.793h-366.091zM879.92 775.584h-76.879l-97.013 75.050-21.965-75.050h-20.134v-512.527h215.991v512.527z"></path>
+</svg>
+          </a>
+        
+      
+        
+      
+        
+          <a href="https://github.com/wenyuhaokikika" class="soft-size--primary soft-style--box" target="_blank" rel="noopener noreferrer">
+            <svg class="icon icon-github" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M64.6 512c0 195.6 125.4 361.9 300.1 422.9 23.5 5.9 19.9-10.8 19.9-22.2v-77.6c-135.8 15.9-141.3-74-150.5-89-18.5-31.5-61.9-39.5-49-54.5 31-15.9 62.5 4 98.9 58 26.4 39.1 77.9 32.5 104.1 26 5.7-23.5 17.9-44.5 34.7-60.9-140.7-25.2-199.4-111.1-199.4-213.3 0-49.5 16.4-95.1 48.4-131.8-20.4-60.6 1.9-112.4 4.9-120.1 58.2-5.2 118.5 41.6 123.3 45.3 33.1-8.9 70.8-13.7 112.9-13.7 42.4 0 80.3 4.9 113.5 13.9 11.3-8.6 67.3-48.8 121.4-43.9 2.9 7.7 24.7 58.3 5.5 118.1 32.5 36.8 49 82.8 49 132.4 0 102.3-59 188.3-200.2 213.2 23.5 23.3 38.1 55.5 38.1 91.1v112.7c0.8 9 0 17.9 15.1 17.9C832.7 877 960.4 709.4 960.4 512.1c0-247.5-200.6-447.9-447.9-447.9C265 64.1 64.6 264.5 64.6 512z"></path>
+</svg>
+          </a>
+        
+      
+    </div>
+     
+    <p>&copy; 2021 <a href="/" target="_blank">wenyuhao</a></p>
+
+    
+
+    <p>Powered by <a href="https://hexo.io" target="_blank" rel="noopener noreferrer">Hexo</a> Theme - <a href="https://github.com/miiiku/flex-block" target="_blank" rel="noopener noreferrer author">flex-block</a></p>
+
+    <p>
+      <a href="javascript:;" id="theme-light">🌞 浅色</a>
+      <a href="javascript:;" id="theme-dark">🌛 深色</a>
+      <a href="javascript:;" id="theme-auto">🤖️ 自动</a>
+    </p>
+  </div>
+</footer>
+  </div>
+
+  <div class="back-to-top-fixed soft-size--round soft-style--box">
+    <svg class="icon icon-back-to-top" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+      <path d="M725.333333 426.666667c-12.8 0-21.333333-4.266667-29.866667-12.8l-213.333333-213.333333c-17.066667-17.066667-17.066667-42.666667 0-59.733333s42.666667-17.066667 59.733333 0l213.333333 213.333333c17.066667 17.066667 17.066667 42.666667 0 59.733333C746.666667 422.4 738.133333 426.666667 725.333333 426.666667z"></path>
+      <path d="M298.666667 426.666667c-12.8 0-21.333333-4.266667-29.866667-12.8-17.066667-17.066667-17.066667-42.666667 0-59.733333l213.333333-213.333333c17.066667-17.066667 42.666667-17.066667 59.733333 0s17.066667 42.666667 0 59.733333l-213.333333 213.333333C320 422.4 311.466667 426.666667 298.666667 426.666667z"></path>
+      <path d="M512 896c-25.6 0-42.666667-17.066667-42.666667-42.666667L469.333333 170.666667c0-25.6 17.066667-42.666667 42.666667-42.666667s42.666667 17.066667 42.666667 42.666667l0 682.666667C554.666667 878.933333 537.6 896 512 896z"></path>
+    </svg>
+  </div>
+
+  
+  <!-- aplayer -->
+
+
+<!-- dplayer -->
+
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  
+  <!-- 尾部用户自定义相关内容 -->
+</body>
+</html>
