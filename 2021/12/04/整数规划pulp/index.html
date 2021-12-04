@@ -24,7 +24,7 @@
 
   
 
-  <title>Hello World | 文玉昊</title>
+  <title> 整数规划 | 文玉昊</title>
 
   
 
@@ -96,16 +96,20 @@
     <div class="header-content">
       <div class="post-text layout-block">
         <div class="layout-margin">
-          <h1 class="title-wrap">Hello World</h1>
+          <h1 class="title-wrap"> 整数规划</h1>
           <h2 class="title-sub-wrap">
             <strong>wenyuhao</strong>
             <span>发布于</span>
-            <time  class="article-date" datetime="2021-08-07T07:16:33.611Z" itemprop="datePublished">2021-08-07</time>
+            <time  class="article-date" datetime="2021-12-04T08:10:25.000Z" itemprop="datePublished">2021-12-04</time>
           </h2>
           <ul class="wrap-list dark">
   
+    <li><a href="/categories/%E7%AE%97%E6%B3%95/">📒 算法</a></li>
+  
 </ul>
           <ul class="wrap-list dark">
+  
+    <li><a href="/tags/%E6%9C%AA%E5%AE%8C%E6%88%90/">🏷️ 未完成</a></li>
   
 </ul>
         </div>
@@ -129,48 +133,30 @@
       
       
       <section class="article-entry markdown-body layout-margin content-padding--large soft-size--large soft-style--box">
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="quick-start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+        <h2 id="求数独的解"><a href="#求数独的解" class="headerlink" title="求数独的解"></a>求数独的解</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pulp <span class="keyword">import</span> *</span><br><span class="line">VALS = ROWS = COLS = <span class="built_in">range</span>(<span class="number">1</span>, <span class="number">10</span>)</span><br><span class="line">Boxes = [</span><br><span class="line">    [(<span class="number">3</span> * i + k + <span class="number">1</span>, <span class="number">3</span> * j + l + <span class="number">1</span>) <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">3</span>) <span class="keyword">for</span> l <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">3</span>)]</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">3</span>)</span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">3</span>)</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>定义一个矩阵choices[VALS, ROWS, COLS],如果choices_4_5_6=1意味着5行6列是4，choices_3_8_9=0，意味着8行9列不为3.<br><code>choices = LpVariable.dicts(&quot;Choice&quot;, (VALS, ROWS, COLS), cat=&quot;Binary&quot;)</code><br>给定约束</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1,每一个格子只能有一个数字</span></span><br><span class="line"><span class="keyword">for</span> r <span class="keyword">in</span> ROWS:</span><br><span class="line">    <span class="keyword">for</span> c <span class="keyword">in</span> COLS:</span><br><span class="line">        prob += lpSum([choices[v][r][c] <span class="keyword">for</span> v <span class="keyword">in</span> VALS]) == <span class="number">1</span></span><br><span class="line"><span class="comment"># The row, column and box constraints are added for each value</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 2，每个值在每行中只能出现一次</span></span><br><span class="line"><span class="keyword">for</span> v <span class="keyword">in</span> VALS:</span><br><span class="line">    <span class="keyword">for</span> r <span class="keyword">in</span> ROWS:</span><br><span class="line">        prob += lpSum([choices[v][r][c] <span class="keyword">for</span> c <span class="keyword">in</span> COLS]) == <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> c <span class="keyword">in</span> COLS:</span><br><span class="line">        prob += lpSum([choices[v][r][c] <span class="keyword">for</span> r <span class="keyword">in</span> ROWS]) == <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> b <span class="keyword">in</span> Boxes:</span><br><span class="line">        prob += lpSum([choices[v][r][c] <span class="keyword">for</span> (r, c) <span class="keyword">in</span> b]) == <span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p>起始的数字约束</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># The starting numbers are entered as constraints</span></span><br><span class="line">input_data = [</span><br><span class="line">    (<span class="number">5</span>, <span class="number">1</span>, <span class="number">1</span>),</span><br><span class="line">    (<span class="number">6</span>, <span class="number">2</span>, <span class="number">1</span>),</span><br><span class="line">    (<span class="number">8</span>, <span class="number">4</span>, <span class="number">1</span>),</span><br><span class="line">    (<span class="number">4</span>, <span class="number">5</span>, <span class="number">1</span>),</span><br><span class="line">    (<span class="number">7</span>, <span class="number">6</span>, <span class="number">1</span>),</span><br><span class="line">    (<span class="number">3</span>, <span class="number">1</span>, <span class="number">2</span>),</span><br><span class="line">    (<span class="number">9</span>, <span class="number">3</span>, <span class="number">2</span>),</span><br><span class="line">    (<span class="number">6</span>, <span class="number">7</span>, <span class="number">2</span>),</span><br><span class="line">    (<span class="number">8</span>, <span class="number">3</span>, <span class="number">3</span>),</span><br><span class="line">    (<span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>),</span><br><span class="line">    (<span class="number">8</span>, <span class="number">5</span>, <span class="number">4</span>),</span><br><span class="line">    (<span class="number">4</span>, <span class="number">8</span>, <span class="number">4</span>),</span><br><span class="line">    (<span class="number">7</span>, <span class="number">1</span>, <span class="number">5</span>),</span><br><span class="line">    (<span class="number">9</span>, <span class="number">2</span>, <span class="number">5</span>),</span><br><span class="line">    (<span class="number">6</span>, <span class="number">4</span>, <span class="number">5</span>),</span><br><span class="line">    (<span class="number">2</span>, <span class="number">6</span>, <span class="number">5</span>),</span><br><span class="line">    (<span class="number">1</span>, <span class="number">8</span>, <span class="number">5</span>),</span><br><span class="line">    (<span class="number">8</span>, <span class="number">9</span>, <span class="number">5</span>),</span><br><span class="line">    (<span class="number">5</span>, <span class="number">2</span>, <span class="number">6</span>),</span><br><span class="line">    (<span class="number">3</span>, <span class="number">5</span>, <span class="number">6</span>),</span><br><span class="line">    (<span class="number">9</span>, <span class="number">8</span>, <span class="number">6</span>),</span><br><span class="line">    (<span class="number">2</span>, <span class="number">7</span>, <span class="number">7</span>),</span><br><span class="line">    (<span class="number">6</span>, <span class="number">3</span>, <span class="number">8</span>),</span><br><span class="line">    (<span class="number">8</span>, <span class="number">7</span>, <span class="number">8</span>),</span><br><span class="line">    (<span class="number">7</span>, <span class="number">9</span>, <span class="number">8</span>),</span><br><span class="line">    (<span class="number">3</span>, <span class="number">4</span>, <span class="number">9</span>),</span><br><span class="line">    (<span class="number">1</span>, <span class="number">5</span>, <span class="number">9</span>),</span><br><span class="line">    (<span class="number">6</span>, <span class="number">6</span>, <span class="number">9</span>),</span><br><span class="line">    (<span class="number">5</span>, <span class="number">8</span>, <span class="number">9</span>),</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (v, r, c) <span class="keyword">in</span> input_data:</span><br><span class="line">    prob += choices[v][r][c] == <span class="number">1</span></span><br></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<p>求解</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># The problem data is written to an .lp file</span></span><br><span class="line">prob.writeLP(<span class="string">&quot;Sudoku.lp&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># The problem is solved using PuLP&#x27;s choice of Solver</span></span><br><span class="line">prob.solve()</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">for r in ROWS:</span><br><span class="line">    if r in [1, 4, 7]:</span><br><span class="line">        print(&quot;+-------+-------+-------+\n&quot;,end=&#x27;&#x27;)</span><br><span class="line">    for c in COLS:</span><br><span class="line">        for v in VALS:</span><br><span class="line">            if value(choices[v][r][c]) == 1:</span><br><span class="line">                if c in [1, 4, 7]:</span><br><span class="line">                    print(&quot;| &quot;,end=&#x27;&#x27;)</span><br><span class="line">                print(str(v) + &quot; &quot;,end=&#x27;&#x27;)</span><br><span class="line">                if c == 9:</span><br><span class="line">                    print(&quot;|\n&quot;,end=&#x27;&#x27;)</span><br><span class="line">+-------+-------+-------+</span><br><span class="line">| 5 3 4 | 6 7 8 | 9 1 2 |</span><br><span class="line">| 6 7 2 | 1 9 5 | 3 4 8 |</span><br><span class="line">| 1 9 8 | 3 4 2 | 5 6 7 |</span><br><span class="line">+-------+-------+-------+</span><br><span class="line">| 8 5 9 | 7 6 1 | 4 2 3 |</span><br><span class="line">| 4 2 6 | 8 5 3 | 7 9 1 |</span><br><span class="line">| 7 1 3 | 9 2 4 | 8 5 6 |</span><br><span class="line">+-------+-------+-------+</span><br><span class="line">| 9 6 1 | 5 3 7 | 2 8 4 |</span><br><span class="line">| 2 8 7 | 4 1 9 | 6 3 5 |</span><br><span class="line">| 3 4 5 | 2 8 6 | 1 7 9 |</span><br></pre></td></tr></table></figure>
       </section>
 
       
       
         <nav class="article-nav">
           
-            <div class="article-nav-item layout-padding">
-  <article class="card-container article-nav-card content-padding--primary soft-size--large soft-style--box">
-    
-    <div class="card-text">
-      
-        <a href="/2021/08/07/bootstrap-select%E5%8A%A8%E6%80%81%E6%94%B9%E5%8F%98option%E4%B8%BA%E7%A9%BA/" itemprop="url">
-          <h2 class="card-text--title text-ellipsis">bootstrap-select动态改变option为空</h2>
-        </a>
-      
-      <div class="card-text--row">Newer</div>
-    </div>
-  </article>
-</div>
-          
           
             <div class="article-nav-item layout-padding">
   <article class="card-container article-nav-card content-padding--primary soft-size--large soft-style--box">
     
     <div class="card-text">
       
-        <a href="/2021/08/07/Celery-%E5%9C%A8Django%E4%B8%AD%E7%AE%80%E5%8D%95%E5%AE%9E%E4%BE%8B/" itemprop="url">
-          <h2 class="card-text--title text-ellipsis">Celery-在Django中简单实例</h2>
+        <a href="/2021/10/08/Gene-ID-%E7%9A%84%E4%BF%A1%E6%81%AF/" itemprop="url">
+          <h2 class="card-text--title text-ellipsis">(no title)</h2>
         </a>
       
       <div class="card-text--row">Older</div>

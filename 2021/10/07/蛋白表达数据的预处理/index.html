@@ -24,7 +24,7 @@
 
   
 
-  <title>Hello World | 文玉昊</title>
+  <title>文玉昊</title>
 
   
 
@@ -96,11 +96,11 @@
     <div class="header-content">
       <div class="post-text layout-block">
         <div class="layout-margin">
-          <h1 class="title-wrap">Hello World</h1>
+          <h1 class="title-wrap"></h1>
           <h2 class="title-sub-wrap">
             <strong>wenyuhao</strong>
             <span>发布于</span>
-            <time  class="article-date" datetime="2021-08-07T07:16:33.611Z" itemprop="datePublished">2021-08-07</time>
+            <time  class="article-date" datetime="2021-10-07T08:35:58.662Z" itemprop="datePublished">2021-10-07</time>
           </h2>
           <ul class="wrap-list dark">
   
@@ -129,20 +129,11 @@
       
       
       <section class="article-entry markdown-body layout-margin content-padding--large soft-size--large soft-style--box">
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="quick-start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
+        <h1 id="文章Proteogenomic-Characterization-Reveals-Therapeutic-Vulnerabilities-in-Lung-Adenocarcinoma数据预处理流程"><a href="#文章Proteogenomic-Characterization-Reveals-Therapeutic-Vulnerabilities-in-Lung-Adenocarcinoma数据预处理流程" class="headerlink" title="文章Proteogenomic Characterization Reveals Therapeutic Vulnerabilities in Lung Adenocarcinoma数据预处理流程"></a>文章Proteogenomic Characterization Reveals Therapeutic Vulnerabilities in Lung Adenocarcinoma数据预处理流程</h1><h2 id="RNA-SEQ数据处理"><a href="#RNA-SEQ数据处理" class="headerlink" title="RNA-SEQ数据处理"></a>RNA-SEQ数据处理</h2><p>RNA-seq流程：<a target="_blank" rel="noopener" href="https://github.com/mcieslik-mctp/crisp-build">https://github.com/mcieslik-mctp/crisp-build</a><br>1，原始测序数据被修剪，使用 BBMap 合并。<br>2，用 STAR 与 GRCh38/hg38 对齐<br>3，所得蛋白质编码基因的基因水平计数被上四分位数归一化，使用 edgeR 转换为 RPKM，并进行 log2 转换。<br>4，从数据矩阵中删除了不到 30% 的所有样本中量化的基因。如果出现冗余的gene symbols平均log2(RPKM)的值，计算 通过计算平均log2(RPKM)聚合冗余基因符号的数据行。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bioinfokit.analys.norm.rpkm(df, gl)<span class="comment">#RPKM计算</span></span><br></pre></td></tr></table></figure>
+<p>XENA提供了counts,FPKM,FPKM-UQ，都是用log2进行了转化。</p>
+<p>CPTAC处理miRNA的数据流程：<a target="_blank" rel="noopener" href="https://github.com/ding-lab/CPTAC_miRNA/blob/master/cptac_mirna_analysis.md">https://github.com/ding-lab/CPTAC_miRNA/blob/master/cptac_mirna_analysis.md</a></p>
+<h2 id="蛋白频谱MS数据过滤与搜索"><a href="#蛋白频谱MS数据过滤与搜索" class="headerlink" title="蛋白频谱MS数据过滤与搜索"></a>蛋白频谱MS数据过滤与搜索</h2>
       </section>
 
       
@@ -154,8 +145,8 @@
     
     <div class="card-text">
       
-        <a href="/2021/08/07/bootstrap-select%E5%8A%A8%E6%80%81%E6%94%B9%E5%8F%98option%E4%B8%BA%E7%A9%BA/" itemprop="url">
-          <h2 class="card-text--title text-ellipsis">bootstrap-select动态改变option为空</h2>
+        <a href="/2021/10/08/Gene-ID-%E7%9A%84%E4%BF%A1%E6%81%AF/" itemprop="url">
+          <h2 class="card-text--title text-ellipsis">(no title)</h2>
         </a>
       
       <div class="card-text--row">Newer</div>
@@ -169,8 +160,8 @@
     
     <div class="card-text">
       
-        <a href="/2021/08/07/Celery-%E5%9C%A8Django%E4%B8%AD%E7%AE%80%E5%8D%95%E5%AE%9E%E4%BE%8B/" itemprop="url">
-          <h2 class="card-text--title text-ellipsis">Celery-在Django中简单实例</h2>
+        <a href="/2021/09/04/NLP%E4%B9%8Bspacy/" itemprop="url">
+          <h2 class="card-text--title text-ellipsis">NLP之spacy</h2>
         </a>
       
       <div class="card-text--row">Older</div>
