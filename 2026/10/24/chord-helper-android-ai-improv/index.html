@@ -24,7 +24,7 @@
 
   
 
-  <title>把一个吉他助手装进 223 KB：和弦、伴奏与 AI 即兴的工程笔记 | 文玉昊</title>
+  <title>把一个吉他助手装进 227 KB：和弦、伴奏与 AI 即兴的工程笔记 | 文玉昊</title>
 
   
 
@@ -96,7 +96,7 @@
     <div class="header-content">
       <div class="post-text layout-block">
         <div class="layout-margin">
-          <h1 class="title-wrap">把一个吉他助手装进 223 KB：和弦、伴奏与 AI 即兴的工程笔记</h1>
+          <h1 class="title-wrap">把一个吉他助手装进 227 KB：和弦、伴奏与 AI 即兴的工程笔记</h1>
           <h2 class="title-sub-wrap">
             <strong>wenyuhao</strong>
             <span>发布于</span>
@@ -128,7 +128,7 @@
       
       
       <section class="article-entry markdown-body layout-margin content-padding--large soft-size--large soft-style--box">
-<p>过去十天，我把一个想法做成了能装进手机的完整应用：<strong>和弦助手（Chord Helper）</strong>。它不是只查和弦的工具，而是把「查和弦 → 调音 → 鼓机/伴奏 → AI 写 solo → 保存作品 → 继续对话改谱」串成了一条完整链路。整个 APK 约 <strong>223 KB</strong>，没有第三方 Android 依赖，代码在 <a href="https://github.com/wenyuhaokikika/chord" target="_blank" rel="noopener">GitHub: wenyuhaokikika/chord</a>。</p>
+<p>过去十天，我把一个想法做成了能装进手机的完整应用：<strong>和弦助手（Chord Helper）</strong>。它不是只查和弦的工具，而是把「查和弦 → 调音 → 鼓机/伴奏 → AI 写 solo → 保存作品 → 继续对话改谱」串成了一条完整链路。整个 APK 约 <strong>227 KB</strong>，没有第三方 Android 依赖，代码在 <a href="https://github.com/wenyuhaokikika/chord" target="_blank" rel="noopener">GitHub: wenyuhaokikika/chord</a>。</p>
 
 <p>这篇文章记录几个工程决定：为什么用 WebView、和弦指法怎么穷举、手机上为什么会出现哑音、四个 agent 怎么保证不胡写，以及作品版本和双指板这些界面细节。</p>
 
@@ -161,6 +161,10 @@ SQLite items(kind,id,json,updated_at) + settings</code></pre>
 <p>指法搜索是一个带剪枝的 DFS：按弦枚举品位，实时检查音高集合、跨度、低音是否根音、发声弦是否连续、最少发声弦数。每个属性和弦只声明音程与必需音，不为每个和弦手写指法表。</p>
 
 <p>实测 C 大三和弦找到 120 个指法，约 1–2ms；12 个根音 × 30 种属性共 <strong>81,073</strong> 个指法，全量跑完约 300ms。这个规模让“全把位展示”成为默认能力，而不是一个昂贵的附加功能。</p>
+
+<p>但“能查到 120 个”不等于“用户能记住 120 个”。所以和弦页默认改成 <strong>CAGED 五种指型</strong>：C、A、G、E、D 五个代表指型卡，先记形状和根音位置（C/A 在 5 弦，G/E 在 6 弦，D 在 4 弦），点卡片直接在指板上高亮。完整的 120 个指法折叠进“全部指法（高级）”，需要时再展开。</p>
+
+<p>CAGED 分组不是硬编码 30 种和弦图，而是从当前搜索出的合法指法里，为五个根音区域各挑一个代表：优先根音弦、把位接近、闭合形状和足够发声弦数。这样换调、换和弦属性时五张卡会跟着变；七/九/变化和弦的代表指型更接近“同把位内最合适的按法”，适合作把位参考。</p>
 
 <h2>伴奏与音频：一次只排一拍</h2>
 
@@ -230,9 +234,9 @@ live.chordSeconds = chunk * 60 / bpm;</code></pre>
 <p>这个项目没有用截图验收，主要靠可断言的测试页：</p>
 
 <ul>
-  <li>引擎自检 <strong>149</strong> 条：乐理、指法合法性、SVG 坐标、性能；</li>
+  <li>引擎自检 <strong>156</strong> 条：乐理、指法合法性、SVG 坐标、性能；</li>
   <li>即兴自检 <strong>150</strong> 条：mock 四个 agent、任务队列、Bias、指型、版本、八度点；</li>
-  <li>界面自检 <strong>350</strong> 条 × 4 种手机/桌面视口：点击、路由、弹窗、布局、版本分页；</li>
+  <li>界面自检 <strong>357</strong> 条 × 4 种手机/桌面视口：点击、路由、弹窗、布局、版本分页；</li>
   <li>调音端到端 <strong>43</strong> 条：注入已知频率，跑完整条音频到界面链路；</li>
   <li>鼓机/伴奏 <strong>42</strong> 条：用 OfflineAudioContext 渲染真实波形，核对拍点、切音、音色和音量。</li>
 </ul>
