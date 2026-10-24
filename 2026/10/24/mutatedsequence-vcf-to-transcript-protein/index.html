@@ -132,6 +132,16 @@
 
 <p>这篇文章记录三个最容易踩的坑、工具的设计、输出，以及<strong>哪些情况它明确处理不了</strong>。代码和完整文档都在 <a href="https://github.com/wenyuhaokikika/mutatedSequence" target="_blank" rel="noopener">GitHub: mutatedSequence</a>。</p>
 
+<div style="margin: 26px 0 34px;">
+  <video controls playsinline preload="metadata" poster="/videos/mutatedsequence-explainer-poster.jpg" style="width:100%; display:block; border-radius:20px; border:1px solid rgba(45,42,50,0.12); box-shadow:0 20px 50px rgba(91,55,68,0.14); background:#FFF8F0;">
+    <source src="/videos/mutatedsequence-explainer.mp4" type="video/mp4">
+    你的浏览器不支持 HTML5 视频，可直接下载 <a href="/videos/mutatedsequence-explainer.mp4">MP4</a>。
+  </video>
+  <div style="margin-top:10px; text-align:center; font-size:13px; color:#756C7A;">
+    1 分 52 秒 · 中文女声旁白 · 1080p · Remotion
+  </div>
+</div>
+
 <h2>为什么重写</h2>
 
 <p>旧流程把每个 CDS exon 单独写成 FASTA，再用 <code>bcftools consensus</code> 逐个应用变异。这个设计有几个根本问题：</p>
