@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="theme-color" content="#3367D6"/>
+  <link rel="apple-touch-icon" href="/icons-192.png">
+  <link rel="manifest" href="/manifest.json">
+  
+  <meta name="generator" content="Hexo 5.4.0">
+
+  
+    <meta name="description" content="用 genome-first block 模型从 VCF 生成完整突变 cDNA、CDS 与蛋白；讨论 REF 偏移、非终止转录本、等位基因与 SV 边界。">
+  
+
+  
+
+  
+    <meta name="author" content="wenyuhao">
+  
+
+  
+
+  
+
+  <title>从 VCF 到完整突变转录本与蛋白：mutatedSequence 2.0 | 文玉昊</title>
+
+  
+
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@1.1.3/index.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlightjs@9.16.2/styles/monokai.css">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body>
+  <div class="root-container">
+    
+<!-- header container -->
+<header class="header-container post">
+  
+    <div class="post-image" style="background-image: url(/68686407_p0.jpg)"></div>
+  
+
+  <!-- navbar -->
+<nav class="navbar">
+  <div class="navbar-content">
+    <!-- logo -->
+    <div class="navbar-logo">
+      <a href="/">
+        
+          文玉昊
+        
+      </a>
+    </div>
+    <!-- link -->
+    <div class="navbar-link">
+      <div class="navbar-btn">
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      <ul class="navbar-list">
+        
+          <li class="navbar-list-item"><a href="/">首页</a></li>
+        
+          <li class="navbar-list-item"><a href="/about">关于</a></li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+    <div class="header-content">
+      <div class="post-text layout-block">
+        <div class="layout-margin">
+          <h1 class="title-wrap">从 VCF 到完整突变转录本与蛋白：mutatedSequence 2.0</h1>
+          <h2 class="title-sub-wrap">
+            <strong>wenyuhao</strong>
+            <span>发布于</span>
+            <time  class="article-date" datetime="2026-10-24T12:00:00.000Z" itemprop="datePublished">2026-10-24</time>
+          </h2>
+          <ul class="wrap-list dark">
+  
+    <li><a href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">📒 数据分析</a></li>
+  
+</ul>
+        </div>
+      </div>
+    </div>
+  
+
+  
+  
+  
+</header>
+
+    <!-- 文章 -->
+
+<!-- 文章内容 -->
+<div class="body-container">
+  <article class="content-container layout-block post-container">
+    <div class="article-info">
+      
+      
+      
+      
+      <section class="article-entry markdown-body layout-margin content-padding--large soft-size--large soft-style--box">
+<p>过去一年里，我把 2023 年的 <code>mutatedSequence</code> 流程整个重写了一遍。旧的 bcftools/seqkit 版本能跑，但它对负链、跨外显子变异、partial model 和 SV 的处理都不够可靠。新版本改成 <strong>genome-first block 模型</strong>：先把变异应用到基因组坐标，再按 exon/CDS 切取，最后翻译成蛋白。</p>
+
+<p>这篇文章记录三个最容易踩的坑、工具的设计、输出，以及<strong>哪些情况它明确处理不了</strong>。代码和完整文档都在 <a href="https://github.com/wenyuhaokikika/mutatedSequence" target="_blank" rel="noopener">GitHub: mutatedSequence</a>。</p>
+
+<h2>为什么重写</h2>
+
+<p>旧流程把每个 CDS exon 单独写成 FASTA，再用 <code>bcftools consensus</code> 逐个应用变异。这个设计有几个根本问题：</p>
+
+<ul>
+  <li><strong>负链</strong>：CDS 已经反向互补，但 VCF 的 REF/ALT 是 forward strand，REF 自然对不上；</li>
+  <li><strong>跨 exon junction</strong>：VCF 的 REF 可能包含 intron，而 per-exon FASTA 没有这段，变异无法应用；</li>
+  <li><strong>多等位/phasing</strong>：一个 consensus 只能选一个 ALT，bcftools 默认也不区分 haplotype；</li>
+  <li><strong>符号型 SV</strong>：bcftools consensus 只支持 <code>&lt;DEL&gt;</code>、<code>&lt;*&gt;</code>、<code>&lt;NON_REF&gt;</code>，不支持 <code>&lt;INS&gt;</code>/<code>&lt;DUP&gt;</code>/<code>&lt;INV&gt;</code>；</li>
+  <li><strong>3' 延伸</strong>：旧流程在 CDS 后接 5 kb 基因组序列，会把 intron 也翻译进去。</li>
+</ul>
+
+<p>新版本先构建 genomic blocks，再按 exon/CDS 取序列。这样 deletion 跨 intron、整个 exon 被删除、负链、5' N pad 和 split stop 都能在同一个模型里处理。</p>
+
+<h2>三个常见问题</h2>
+
+<h3>1. REF 错位，参考序列前面多 1–3 个 X/N？</h3>
+
+<p>旧代码里有一行 <code>mode = b.replace(a, 'X')</code>：<code>a</code> 是从基因组切出的 CDS，<code>b</code> 是 Ensembl CDS FASTA。这里的 <code>X</code> 只是占位符，不是碱基，也不是 alignment。</p>
+
+<ul>
+  <li>Ensembl GTF 的 <code>CDS</code> 行<strong>不包含终止密码子</strong>，终止密码子单独写成 <code>stop_codon</code>；而 <code>cds.all.fa</code> 包含 stop。所以 GTF CDS 拼接结果通常比 Ensembl CDS 短 <strong>3 bp</strong>。</li>
+  <li>5' 不完整模型（<code>mRNA_start_NF</code>/<code>cds_start_NF</code>）在 <code>cds.all.fa</code> 里会用 <strong>1–2 个 N</strong> 补齐第一个密码子，而 GTF CDS 从第一个已知碱基开始。</li>
+  <li>因此 <code>b = "NN" + a + "TAG"</code> 时，<code>mode = "NNXTAG"</code>：2 个 N 是 5' padding，X 是匹配部分，TAG 是 3' stop。看起来像“前面多了一个 X”，实际上多出的 3 个碱基在 3' 端。</li>
+</ul>
+
+<p>真实 chr21 例子：</p>
+
+<table>
+  <thead><tr><th>Transcript</th><th>Raw GTF CDS</th><th>Ensembl CDS</th><th>差值</th><th>解释</th></tr></thead>
+  <tbody>
+    <tr><td>ENST00000432178 (CCT8)</td><td>319</td><td>324</td><td>+5</td><td>5' 2 个 N + 3' stop</td></tr>
+    <tr><td>ENST00000460679 (JAM2)</td><td>782</td><td>786</td><td>+4</td><td>5' 1 个 N + 3' stop</td></tr>
+    <tr><td>ENST00000284885 (TMPRSS15)</td><td>3057</td><td>3060</td><td>+3</td><td>无 N；仅 3' stop</td></tr>
+    <tr><td>ENST00000381284 (ITSN1)</td><td>949</td><td>951</td><td>+2</td><td>5' 2 个 N；无 stop</td></tr>
+  </tbody>
+</table>
+
+<p>chr21 全部 1,050 条 CDS 的 raw length difference：</p>
+
+<pre><code>+3: 831   0: 136   +5: 40   +4: 29   +1: 8   +2: 6
+leading N count: 0: 967, 1: 37, 2: 46
+terminal codon: stop: 900, no_stop: 150</code></pre>
+
+<p>如果你在 VCF 层面看到 REF 对不上，还要检查：负链是否反向互补、indel 的 POS 是 anchor（<code>REF=AT, ALT=A</code> 删除的是 POS+1）、VCF 是否 left-align 过、大小写（<code>dna_sm</code> 是小写）、assembly/contig 是否一致。新工具的 <code>diagnose</code> 会输出这些分布；<code>--strict</code> 可以让 REF mismatch 直接报错。</p>
+
+<h3>2. 为什么很多转录本没有 stop codon？</h3>
+
+<p>Ensembl 109 的 121,766 条 CDS FASTA 中，99,812 条（81.97%）以 TAA/TAG/TGA 结尾，21,954 条（18.03%）不是。这不是 bug：</p>
+
+<ul>
+  <li><strong>18,559</strong> 条带 <code>mRNA_end_NF</code>：3' 不完整，stop 在已知转录本之外；</li>
+  <li><strong>2,614</strong> 条带 <code>mRNA_start_NF</code>：5' 不完整（可与 end_NF 重叠）；</li>
+  <li>约 <strong>574</strong> 个 IG/TR V/D/J 基因片段，本来就不是完整蛋白；</li>
+  <li><strong>114</strong> 个 <code>non_stop_decay</code>，无 stop，被 NSD 降解；</li>
+  <li>还有 <strong>758</strong> 条以 stop triplet 结尾，但 CDS 长度不是 3 的倍数，即不在阅读框内。</li>
+</ul>
+
+<p>严格无框内 stop 的集合是 22,712（21,954 + 758）。旧流程的 <code>isStopWithCodon</code> 强制 <code>len(seq) % 3 == 0</code>，会排除 758 个伪 stop，但把 partial model 都标成 non-stop；<code>tailCdsSeq</code> 还使用了错误的负链坐标。新工具给每条转录本输出 <code>reference_class</code>（<code>complete</code>、<code>partial_3</code>、<code>partial_5_complete_3</code> 等）和 <code>reference_stop_reason</code>，不强行要求 stop，并同时输出 annotated protein 和 3' 延伸蛋白。</p>
+
+<h3>3. 等位基因和 SV 要注意什么？</h3>
+
+<ul>
+  <li>不要盲目应用所有 ALT；按 <code>GT</code>/phase 选。支持 <code>alt</code>、<code>genotype</code>、<code>hom</code>、<code>hap1</code>、<code>hap2</code>。</li>
+  <li>未 phasing 的 <code>0/1</code> 用 <code>hap1</code>/<code>hap2</code> 只是按 GT 顺序约定，结果是 mosaic，不是真实单倍型。</li>
+  <li><code>1/2</code> 不能在一个线性 consensus 里同时表示两个 ALT；分别跑两次。</li>
+  <li>重叠变异默认跳过后来的，TSV 标记 <code>overlap_skipped</code>；<code>--overlap error</code> 直接报错。</li>
+  <li>符号型 <code>&lt;DEL&gt;</code> 用 POS anchor + END；<code>&lt;INS&gt;</code> 用 LEFT/RIGHT_SVINSSEQ（建议只取一个）；<code>&lt;DUP&gt;</code> 按 tandem 处理；<code>&lt;INV&gt;</code> 反转 POS+1..END。</li>
+  <li><code>&lt;TRA&gt;</code>/<code>&lt;BND&gt;</code>/<code>&lt;CNV&gt;</code> 无法表示成一条线性 transcript，会标记 unresolved。</li>
+</ul>
+
+<p>dysgu issue #65 的核心就是这件事：bcftools consensus 不支持符号型 SV，SVLEN/END/SVINSSEQ 又经常不一致，phasing 还会改变结果。新工具会写一个 <code>normalized.vcf</code>（单 ALT、显式 REF/ALT），方便交叉检查，但主输出不依赖 bcftools。</p>
+
+<h2>设计：genome-first blocks</h2>
+
+<pre><code>genome FASTA + GTF/GFF3 + VCF
+        ↓
+解析 transcript / exon / CDS / stop_codon
+        ↓
+REF 与 forward genome 校验（--strict 可报错）
+        ↓
+选择 allele → 构建 Edit → 处理 unresolved/overlap
+        ↓
+按 chromosome 生成 reference/ALT blocks
+        ↓
+逐个 transcript 切 exon / CDS
+        ├─ mutated cDNA
+        ├─ mutated CDS（CDS + stop_codon + 5' N pad）
+        ├─ annotated protein（停在注释 stop）
+        └─ extended protein（CDS + 剪接 3' UTR）
+        ↓
+per-variant + aggregate TSV / FASTA / normalized VCF</code></pre>
+
+<p>核心是 block 列表：reference block、alternate block、insertion block。exon/CDS 和 block 求交，因此 deletion 跨 intron 时只删除 exonic 部分；整个 exon 被删除时，剩余 exon 正确拼接；负链先取 plus-strand block，再对 exon/CDS 整体反向互补。</p>
+
+<h2>输出</h2>
+
+<p>每次 run 的主要文件：</p>
+
+<ul>
+  <li><code>mutation_report.tsv</code>：每个 variant × transcript 一行，含原始 VCF REF/ALT、选中 allele、REF 校验、codon/AA 变化，以及完整 before/after cDNA/CDS/protein；</li>
+  <li><code>transcripts.tsv</code>：每个 transcript 一行的聚合结果；</li>
+  <li><code>variants.tsv</code>：每个 VCF 记录/选中 ALT 一行；</li>
+  <li><code>normalized.vcf</code>：单 ALT、显式 REF/ALT；</li>
+  <li><code>sequences/</code>：transcript/CDS/protein/基因组区域 FASTA。</li>
+</ul>
+
+<p>示例（测试数据）：</p>
+
+<table>
+  <thead><tr><th>variant</th><th>transcript</th><th>consequence</th><th>codon</th><th>AA</th><th>protein diff</th></tr></thead>
+  <tbody>
+    <tr><td>A_missense</td><td>TX_A</td><td>missense</td><td>CTG → ATG</td><td>L → M</td><td>p.Leu11Met</td></tr>
+    <tr><td>A_nonsense</td><td>TX_A</td><td>nonsense</td><td>AAA → TAA</td><td>K → *</td><td>p.Lys30_Asn233del</td></tr>
+    <tr><td>A_frameshift_ins</td><td>TX_A</td><td>frameshift</td><td>TAT → TCA</td><td>Y → S</td><td>p.Tyr41_Asn233delins3aa</td></tr>
+    <tr><td>B_missense</td><td>TX_B</td><td>missense</td><td>CTG → ATG</td><td>L → M</td><td>p.Leu11Met</td></tr>
+  </tbody>
+</table>
+
+<p><code>B_missense</code> 是负链：VCF ALT 是 forward 的 T，转录本上反向互补成 ATG。</p>
+
+<h2>明确不能处理的情况</h2>
+
+<p>这部分很重要。遇到以下情况，不要假设工具“默默做对了”：</p>
+
+<table>
+  <thead><tr><th>情况</th><th>行为</th><th>建议</th></tr></thead>
+  <tbody>
+    <tr><td>未 phasing 的 compound/overlapping variants</td><td>生成 mosaic；后一个 edit 被 skip</td><td>先 phasing；用 Haplosaurus/VCF2Prot 做 phased haplotype</td></tr>
+    <tr><td>splice-site 导致 exon skipping、cryptic splice、intron retention</td><td>只注释 splice region，exon 结构固定</td><td>VEP + SpliceAI/MMSplice，或 alternative transcript</td></tr>
+    <tr><td>&lt;TRA&gt;/&lt;BND&gt;/&lt;CNV&gt;、复杂重排</td><td>unresolved + skip</td><td>assembly/pangenome、AnnotSV、Varcode、vcf2diploid</td></tr>
+    <tr><td>没有 SVINSSEQ 的 &lt;INS&gt;、非 tandem &lt;DUP&gt;</td><td>无法重建/按 tandem 近似</td><td>assembly-based insertion，或重新表示 VCF</td></tr>
+    <tr><td>线粒体密码、硒蛋白、alternative start、programmed frameshift</td><td>使用标准核密码；CTG 翻译成 L，不强制 M</td><td>专用遗传密码/注释工具</td></tr>
+    <tr><td>assembly/release 不一致、transcript 坐标 VCF</td><td>大量 REF mismatch；warning/skip 或 --strict 报错</td><td>统一 reference；liftover；bcftools norm</td></tr>
+    <tr><td>BCF/MAF/gVCF、BAM/RNA、HLA</td><td>不接受/不使用</td><td>转 VCF；Isovar；pVACseq</td></tr>
+    <tr><td>exon 边界 insertion、partial-overlap replacement block</td><td>边界包含是约定；ALT 线性切片近似</td><td>检查边界；拆成更小的显式 edit</td></tr>
+  </tbody>
+</table>
+
+<p>另外，未 phasing 的多样本、polyploid、somatic VAF/subclone、全基因组 mutated FASTA、超大 TSV、临床/群体/regulatory 注释、HGVS、neoantigen 都不是它的强项。</p>
+
+<h2>和现有工具的关系</h2>
+
+<p>它不是 VEP 的替代品，也不是“全面更好”。更准确地说：</p>
+
+<table>
+  <thead><tr><th>需求</th><th>更合适的工具</th></tr></thead>
+  <tbody>
+    <tr><td>临床/群体/regulatory/domain 注释、SIFT/PolyPhen、HGVS</td><td>VEP、SnpEff、Mutalyzer</td></tr>
+    <tr><td>phased CDS/protein haplotype、compound variants</td><td>Haplosaurus、VCF2Prot</td></tr>
+    <tr><td>极快的 VCF consequence 注释</td><td>bcftools csq</td></tr>
+    <tr><td>新抗原/HLA</td><td>pVACseq</td></tr>
+    <tr><td>RNA reads 证据</td><td>Isovar</td></tr>
+    <tr><td>完整 cDNA/CDS/annotated+extended protein、SV/partial model/审计 TSV</td><td>mutatedSequence</td></tr>
+  </tbody>
+</table>
+
+<p>我们的优势主要在 sequence-level：完整 cDNA/CDS、5' N pad、split stop、负链、跨 exon junction、常见 SV、逐 variant + aggregate 审计表。劣势在注释广度、真实 phasing、splicing 建模和超大规模。完整的对比（VEP/Haplosaurus、bcftools csq、SnpEff、VCF2Prot、ORFan、Varcode、Isovar、Mutalyzer/TransVar、pVACseq、vcf2diploid）写在 README 里。</p>
+
+<h2>怎么运行</h2>
+
+<pre><code># 直接用 Python（无第三方依赖）
+python -m mutatedseq run \
+  -g genome.fa -a annotation.gtf -v sample.vcf -o out \
+  --cds cds.all.fa.gz --cdna cdna.all.fa.gz --pep pep.all.fa.gz \
+  --sample S1
+
+# 诊断 REF 偏移 / N pad / 非终止转录本
+python -m mutatedseq diagnose \
+  -g genome.fa -a annotation.gtf -v sample.vcf -o diag \
+  --cds cds.all.fa.gz --pep pep.all.fa.gz
+
+# REF 不匹配直接报错
+python -m mutatedseq run ... --strict</code></pre>
+
+<p>Docker 镜像只包含环境，代码通过 <code>-v</code> 挂载：</p>
+
+<pre><code>docker run -it --rm \
+  -v "${PWD}:/workspace" -w /workspace \
+  mutatedsequence:2.0.0
+
+# 容器内
+python -m mutatedseq --version
+python -m mutatedseq run ...</code></pre>
+
+<h2>验证</h2>
+
+<p>合成测试数据覆盖正负链、跨外显子 deletion、partial model、split stop、MNV、frameshift/in-frame、multiallelic/phased、overlap、符号型 SV 和 REF mismatch；10 个端到端测试全部通过。真实 Ensembl 109 chr21：1,050 条 CDS 重建全部一致；952/1,050 个蛋白与 Ensembl pep 完全一致，98 个差异全部是 3' 不完整模型的末端 partial codon。</p>
+
+<h2>链接</h2>
+
+<ul>
+  <li><a href="https://github.com/wenyuhaokikika/mutatedSequence" target="_blank" rel="noopener">GitHub: mutatedSequence</a></li>
+  <li><a href="https://github.com/wenyuhaokikika/mutatedSequence/blob/main/README.zh-CN.md" target="_blank" rel="noopener">中文 README</a></li>
+  <li><a href="https://github.com/wenyuhaokikika/mutatedSequence/blob/main/README.md" target="_blank" rel="noopener">English README</a></li>
+  <li><a href="https://github.com/wenyuhaokikika/mutatedSequence/blob/main/examples/demo_out/mutation_report.tsv" target="_blank" rel="noopener">示例 mutation_report.tsv</a></li>
+</ul>
+
+<p>如果这篇文章只能留下一句话：<strong>把 VCF 变成完整蛋白，真正的难点不是“翻译”，而是坐标、等位基因、转录本结构和 SV 的边界。</strong></p>
+
+      </section>
+
+      
+      
+        <nav class="article-nav">
+          
+          
+            <div class="article-nav-item layout-padding">
+  <article class="card-container article-nav-card content-padding--primary soft-size--large soft-style--box">
+    
+    <div class="card-text">
+      
+        <a href="/2021/12/04/%E6%95%B4%E6%95%B0%E8%A7%84%E5%88%92pulp/" itemprop="url">
+          <h2 class="card-text--title text-ellipsis">整数规划</h2>
+        </a>
+      
+      <div class="card-text--row">Older</div>
+    </div>
+  </article>
+</div>
+          
+        </nav>
+      
+
+      <section class="page-message-container layout-padding">
+        
+
+
+  
+  
+    <div class="valine-container comments-container content-padding--primary soft-size--large soft-style--box">
+      <div id="valine_thread" class="valine-thread"></div>
+    </div>
+    <script type="text/javascript" src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+    <script type="text/javascript" src='//unpkg.com/valine/dist/Valine.min.js'></script>
+    <script type="text/javascript">
+      new Valine({
+        el: "#valine_thread",
+        appId: "BtOHIKzoGxULPgP2lD9JcPyH-gzGzoHsz",
+        appKey: "jxhsU3oONoDenXtjQCLhWf4B",
+        avatar: "mm",
+        placeholder: "随便说点什么叭～",
+        notify: false,
+        visitor: false,
+        pageSize: 10,
+      });
+    </script>
+  
+
+  
+  
+
+
+      </section>
+    </div>
+    <div class="widget-info">
+      <section class="widget-author widget-item layout-margin content-padding--primary soft-size--large soft-style--box">
+  <div class="widget-body">
+    
+      <img src="https://avatars.githubusercontent.com/u/40107519?v=4" class="soft-size--round soft-style--box" alt="wenyuhao">
+    
+    
+      <h2>wenyuhao</h2>
+    
+    
+      <p>生物信息学</p>
+    
+
+    <div class="count-box">
+      <div class="count-box--item">
+        <svg class="icon icon-article" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M240.51564747 647.74217627h196.07203239c16.59071043 0 30.16492806-13.57421762 30.16492805-30.16492806V165.10332731c0-33.18142087-30.16492806-60.32985613-60.32985612-60.32985611H245.04038668C225.43318342 104.7734712 210.35071939 119.85593522 210.35071939 139.46313845V617.57724821c0 16.59071043 13.57421762 30.16492806 30.16492808 30.16492806z m663.62841731-452.47392089v482.63884894c0 33.18142087-27.14843525 60.32985613-60.32985612 60.32985613H180.18579134c-33.18142087 0-60.32985613-27.14843525-60.32985612-60.32985613V195.26825538c-49.77213131 0-90.49478418 40.72265287-90.49478417 90.49478417v452.4739209c0 49.77213131 40.72265287 90.49478418 90.49478417 90.49478417h286.56681657c16.59071043 0 30.16492806 13.57421762 30.16492807 30.16492807s13.57421762 30.16492806 30.16492805 30.16492806h90.49478418c16.59071043 0 30.16492806-13.57421762 30.16492805-30.16492806s13.57421762-30.16492806 30.16492807-30.16492807h286.56681657c49.77213131 0 90.49478418-40.72265287 90.49478417-90.49478417V285.76303955c0-49.77213131-40.72265287-90.49478418-90.49478417-90.49478417zM587.41232014 647.74217627h191.54729318c19.60720323 0 34.68966726-15.08246403 34.68966729-34.68966727V134.93839925c0-16.59071043-13.57421762-30.16492806-30.16492808-30.16492805H617.57724821c-30.16492806 0-60.32985613 27.14843525-60.32985612 60.32985611v452.4739209c0 16.59071043 13.57421762 30.16492806 30.16492805 30.16492806z" fill="currentColor"></path>
+</svg>
+        <span>12</span>
+      </div>
+      <div class="count-box--item">
+        <svg class="icon icon-categories" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M900.3614811 257.09082106h-339.81629553l-67.96326003-101.9448889c-19.41807444-29.12711113-48.54518557-43.69066667-82.52681443-43.69066667H123.6385189c-53.39970333 0-97.09036999 43.69066667-97.09037113 97.09036999v582.54222222c0 53.39970333 43.69066667 97.09036999 97.09037113 97.09037002h776.7229622c53.39970333 0 97.09036999-43.69066667 97.09037113-97.09037002V354.18119104c0-53.39970333-43.69066667-97.09036999-97.09037113-97.09036998z m-97.09036999 242.72592554H220.72888889c-24.27259221 0-48.54518557-24.27259221-48.54518556-48.54518556s24.27259221-48.54518557 48.54518556-48.54518444h582.54222222c24.27259221 0 48.54518557 24.27259221 48.54518556 48.54518444s-24.27259221 48.54518557-48.54518556 48.54518556z" fill="currentColor"></path>
+</svg>
+        5
+      </div>
+      <div class="count-box--item">
+        <svg class="icon icon-tags" viewBox="0 0 1098 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M283.42180005 272q0-28.38857157-20.09142843-48.48000001t-48.47999998-20.09142842-48.48000002 20.09142842-20.09142846 48.48000001 20.09142846 48.48 48.48000002 20.09142843 48.47999998-20.09142843 20.09142843-48.48zM855.0332285 580.57142843q0 28.38857157-19.81714313 48.2057147l-263.03999997 263.58857157q-20.9142853 19.81714313-48.75428534 19.81714312-28.38857157 0-48.20571468-19.81714312l-383.04-383.58857157q-20.36571468-19.81714313-34.55999999-54.10285688t-14.19428534-62.6742853l0-222.85714313q0-27.84000002 20.36571469-48.20571469t48.2057147-20.36571466l222.85714313 0q28.38857157 0 62.6742853 14.19428529t54.65142842 34.55999999l383.04000001 382.49142843q19.81714313 20.9142853 19.81714314 48.75428532zM1060.74751475 580.57142843q0 28.38857157-19.81714313 48.2057147l-263.04 263.58857157q-20.9142853 19.81714313-48.75428531 19.81714312-19.26857155 0-31.61142843-7.47428531t-28.38857159-24.13714314l251.79428534-251.7942853q19.81714313-19.81714313 19.81714308-48.20571469 0-27.84000002-19.81714308-48.75428531l-383.04000001-382.49142845q-20.36571468-20.36571468-54.65142842-34.55999999t-62.67428532-14.19428534l120 0q28.38857157 0 62.67428532 14.19428534t54.65142842 34.55999999l383.03999998 382.49142845q19.81714313 20.9142853 19.81714314 48.75428531z" fill="currentColor"></path>
+</svg>
+        2
+      </div>
+    </div>
+  </div>
+</section>
+
+      
+
+      
+<section class="widet-notice widget-item layout-margin content-padding--primary soft-size--large soft-style--box">
+  <div class="widget-title">
+    <svg class="icon icon-notice" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M512 945.02305225v28.15620663a24.27259221 24.27259221 0 0 1-24.27259221 24.27259335H394.0352a48.54518557 48.54518557 0 0 1-41.74885888-23.78714112l-110.68302222-184.47170332a132.04290333 132.04290333 0 0 1-17.47626667-48.54518557h118.4502511a200.97706667 200.97706667 0 0 1 76.21594113 14.56355556l20.38897777 133.49925888a48.54518557 48.54518557 0 0 0 36.40888888 27.67075555l16.01991111 2.91271112a24.27259221 24.27259221 0 0 1 20.38897778 25.72894889zM997.45185223 463.45481443a194.18074112 194.18074112 0 0 1-38.8361489 116.50844445 24.75804445 24.75804445 0 0 1-36.4088889 0l-34.95253333-34.95253333a24.27259221 24.27259221 0 0 1-2.91271111-30.58346667 97.09036999 97.09036999 0 0 0 0-106.79940665 24.27259221 24.27259221 0 0 1 2.91271111-30.58346666l34.95253333-34.95253334a24.75804445 24.75804445 0 0 1 18.93262223-7.28177777 26.2144 26.2144 0 0 1 17.47626667 9.70903665A194.18074112 194.18074112 0 0 1 997.45185223 463.45481443z m-194.18074112-388.36148111v776.72296335a48.54518557 48.54518557 0 0 1-48.54518556 48.54518443h-28.64165888a48.54518557 48.54518557 0 0 1-33.98163001-14.07810332l-145.63555556-143.20829668A291.27111111 291.27111111 0 0 0 342.57730333 657.63555556H172.18370333a145.63555556 145.63555556 0 0 1-145.63555556-145.63555556v-97.09036999a145.63555556 145.63555556 0 0 1 145.63555556-145.63555556h170.3936a291.27111111 291.27111111 0 0 0 206.31703779-85.43952668l145.63555555-143.20829554a48.54518557 48.54518557 0 0 1 33.98162888-14.07810446H754.72592555a48.54518557 48.54518557 0 0 1 48.54518556 48.54518555z" fill="currentColor"></path>
+</svg>
+    <span>NOTICE</span>
+  </div>
+  <div class="widget-body">
+    <p>qq 3484905018</p>
+  </div>
+</section>
+
+
+      <section class="widget-categorys widget-item layout-margin content-padding--primary soft-size--large soft-style--box">
+  <div class="widget-title">
+    <svg class="icon icon-categories" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M900.3614811 257.09082106h-339.81629553l-67.96326003-101.9448889c-19.41807444-29.12711113-48.54518557-43.69066667-82.52681443-43.69066667H123.6385189c-53.39970333 0-97.09036999 43.69066667-97.09037113 97.09036999v582.54222222c0 53.39970333 43.69066667 97.09036999 97.09037113 97.09037002h776.7229622c53.39970333 0 97.09036999-43.69066667 97.09037113-97.09037002V354.18119104c0-53.39970333-43.69066667-97.09036999-97.09037113-97.09036998z m-97.09036999 242.72592554H220.72888889c-24.27259221 0-48.54518557-24.27259221-48.54518556-48.54518556s24.27259221-48.54518557 48.54518556-48.54518444h582.54222222c24.27259221 0 48.54518557 24.27259221 48.54518556 48.54518444s-24.27259221 48.54518557-48.54518556 48.54518556z" fill="currentColor"></path>
+</svg>
+    <span>CATEGORYS</span>
+  </div>
+  <div class="widget-body">
+    <ul class="categorys-list">
+      
+        <li class="categorys-list-item">
+          <a href="/categories/web-%E5%BC%80%E5%8F%91/">
+            web 开发 (3)
+          </a>
+        </li>
+      
+        <li class="categorys-list-item">
+          <a href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">
+            数据分析 (4)
+          </a>
+        </li>
+      
+        <li class="categorys-list-item">
+          <a href="/categories/%E9%9A%8F%E7%AC%94/">
+            随笔 (3)
+          </a>
+        </li>
+      
+        <li class="categorys-list-item">
+          <a href="/categories/NLP/">
+            NLP (1)
+          </a>
+        </li>
+      
+        <li class="categorys-list-item">
+          <a href="/categories/%E7%AE%97%E6%B3%95/">
+            算法 (1)
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+</section>
+
+      <section class="widget-tags widget-item  layout-margin content-padding--primary soft-size--large soft-style--box">
+  <div class="widget-title">
+    <svg class="icon icon-tags" viewBox="0 0 1098 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M283.42180005 272q0-28.38857157-20.09142843-48.48000001t-48.47999998-20.09142842-48.48000002 20.09142842-20.09142846 48.48000001 20.09142846 48.48 48.48000002 20.09142843 48.47999998-20.09142843 20.09142843-48.48zM855.0332285 580.57142843q0 28.38857157-19.81714313 48.2057147l-263.03999997 263.58857157q-20.9142853 19.81714313-48.75428534 19.81714312-28.38857157 0-48.20571468-19.81714312l-383.04-383.58857157q-20.36571468-19.81714313-34.55999999-54.10285688t-14.19428534-62.6742853l0-222.85714313q0-27.84000002 20.36571469-48.20571469t48.2057147-20.36571466l222.85714313 0q28.38857157 0 62.6742853 14.19428529t54.65142842 34.55999999l383.04000001 382.49142843q19.81714313 20.9142853 19.81714314 48.75428532zM1060.74751475 580.57142843q0 28.38857157-19.81714313 48.2057147l-263.04 263.58857157q-20.9142853 19.81714313-48.75428531 19.81714312-19.26857155 0-31.61142843-7.47428531t-28.38857159-24.13714314l251.79428534-251.7942853q19.81714313-19.81714313 19.81714308-48.20571469 0-27.84000002-19.81714308-48.75428531l-383.04000001-382.49142845q-20.36571468-20.36571468-54.65142842-34.55999999t-62.67428532-14.19428534l120 0q28.38857157 0 62.67428532 14.19428534t54.65142842 34.55999999l383.03999998 382.49142845q19.81714313 20.9142853 19.81714314 48.75428531z" fill="currentColor"></path>
+</svg>
+    <span>TAGS</span>
+  </div>
+  <div class="widget-body">
+    <div class="tags-cloud">
+      <a href="/tags/%E5%AE%8C%E6%88%90/" style="font-size: 20px;" class="tags-cloud-10">完成</a> <a href="/tags/%E8%BF%98%E6%B2%A1%E6%9C%89%E5%AE%8C%E6%88%90/" style="font-size: 10px;" class="tags-cloud-0">还没有完成</a>
+    </div>
+  </div>
+</section>
+    </div>
+  </article>
+</div>
+
+    <!-- footer container -->
+<footer id="footer" class="footer">
+  <div class="footer-container">
+    
+    <div class="social-icons">
+      
+        
+      
+        
+          <a href="https://www.zhihu.com/people/xing-zhe-80-14" class="soft-size--primary soft-style--box" target="_blank" rel="noopener noreferrer">
+            <svg t="1587373160860" class="icon icon-zhihu" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M544.949 561.422s0-71.387-34.779-75.050c-34.779-3.663-142.775 0-142.775 0v-219.654h161.078s-1.83-73.219-32.949-73.219h-261.755l43.93-117.148s-65.897 3.663-89.692 45.761-98.844 252.604-98.844 252.604 25.627 10.983 67.726-20.134c42.101-31.116 56.743-86.033 56.743-86.033l76.879-3.663 1.83 223.316s-133.621-1.83-161.078 0c-27.457 1.83-42.101 75.050-42.101 75.050h203.182s-18.307 124.47-69.557 214.164c-53.085 89.692-151.929 161.078-151.929 161.078s71.387 29.287 140.947-10.983c69.557-42.101 120.811-223.316 120.811-223.316l162.912 203.182s14.643-97.013-1.83-124.47c-18.307-27.457-113.49-137.283-113.49-137.283l-42.101 36.607 29.287-120.811h177.552zM587.050 188.010l-1.83 660.793h65.897l23.795 82.37 115.321-82.37h162.912v-660.793h-366.091zM879.92 775.584h-76.879l-97.013 75.050-21.965-75.050h-20.134v-512.527h215.991v512.527z"></path>
+</svg>
+          </a>
+        
+      
+        
+      
+        
+          <a href="https://github.com/wenyuhaokikika" class="soft-size--primary soft-style--box" target="_blank" rel="noopener noreferrer">
+            <svg class="icon icon-github" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M64.6 512c0 195.6 125.4 361.9 300.1 422.9 23.5 5.9 19.9-10.8 19.9-22.2v-77.6c-135.8 15.9-141.3-74-150.5-89-18.5-31.5-61.9-39.5-49-54.5 31-15.9 62.5 4 98.9 58 26.4 39.1 77.9 32.5 104.1 26 5.7-23.5 17.9-44.5 34.7-60.9-140.7-25.2-199.4-111.1-199.4-213.3 0-49.5 16.4-95.1 48.4-131.8-20.4-60.6 1.9-112.4 4.9-120.1 58.2-5.2 118.5 41.6 123.3 45.3 33.1-8.9 70.8-13.7 112.9-13.7 42.4 0 80.3 4.9 113.5 13.9 11.3-8.6 67.3-48.8 121.4-43.9 2.9 7.7 24.7 58.3 5.5 118.1 32.5 36.8 49 82.8 49 132.4 0 102.3-59 188.3-200.2 213.2 23.5 23.3 38.1 55.5 38.1 91.1v112.7c0.8 9 0 17.9 15.1 17.9C832.7 877 960.4 709.4 960.4 512.1c0-247.5-200.6-447.9-447.9-447.9C265 64.1 64.6 264.5 64.6 512z"></path>
+</svg>
+          </a>
+        
+      
+    </div>
+     
+    <p>&copy; 2021 <a href="/" target="_blank">wenyuhao</a></p>
+
+    
+
+    <p>Powered by <a href="https://hexo.io" target="_blank" rel="noopener noreferrer">Hexo</a> Theme - <a href="https://github.com/miiiku/flex-block" target="_blank" rel="noopener noreferrer author">flex-block</a></p>
+
+    <p>
+      <a href="javascript:;" id="theme-light">🌞 浅色</a>
+      <a href="javascript:;" id="theme-dark">🌛 深色</a>
+      <a href="javascript:;" id="theme-auto">🤖️ 自动</a>
+    </p>
+  </div>
+</footer>
+  </div>
+
+  <div class="back-to-top-fixed soft-size--round soft-style--box">
+    <svg class="icon icon-back-to-top" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+      <path d="M725.333333 426.666667c-12.8 0-21.333333-4.266667-29.866667-12.8l-213.333333-213.333333c-17.066667-17.066667-17.066667-42.666667 0-59.733333s42.666667-17.066667 59.733333 0l213.333333 213.333333c17.066667 17.066667 17.066667 42.666667 0 59.733333C746.666667 422.4 738.133333 426.666667 725.333333 426.666667z"></path>
+      <path d="M298.666667 426.666667c-12.8 0-21.333333-4.266667-29.866667-12.8-17.066667-17.066667-17.066667-42.666667 0-59.733333l213.333333-213.333333c17.066667-17.066667 42.666667-17.066667 59.733333 0s17.066667 42.666667 0 59.733333l-213.333333 213.333333C320 422.4 311.466667 426.666667 298.666667 426.666667z"></path>
+      <path d="M512 896c-25.6 0-42.666667-17.066667-42.666667-42.666667L469.333333 170.666667c0-25.6 17.066667-42.666667 42.666667-42.666667s42.666667 17.066667 42.666667 42.666667l0 682.666667C554.666667 878.933333 537.6 896 512 896z"></path>
+    </svg>
+  </div>
+
+  
+  <!-- aplayer -->
+
+
+<!-- dplayer -->
+
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  
+  <!-- 尾部用户自定义相关内容 -->
+</body>
+</html>
