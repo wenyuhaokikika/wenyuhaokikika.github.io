@@ -307,11 +307,12 @@ python -m mutatedseq diagnose \
 # REF 不匹配直接报错
 python -m mutatedseq run ... --strict</code></pre>
 
-<p>Docker 镜像只包含环境，代码通过 <code>-v</code> 挂载：</p>
+<p>镜像已发布到 Docker Hub：<a href="https://hub.docker.com/r/wenyuhaobuemoji/mutatedsequence" target="_blank" rel="noopener">wenyuhaobuemoji/mutatedsequence</a>。镜像只包含环境，代码通过 <code>-v</code> 挂载：</p>
 
-<pre><code>docker run -it --rm \
+<pre><code>docker pull wenyuhaobuemoji/mutatedsequence:2.0.0
+docker run -it --rm \
   -v "${PWD}:/workspace" -w /workspace \
-  mutatedsequence:2.0.0
+  wenyuhaobuemoji/mutatedsequence:2.0.0
 
 # 容器内
 python -m mutatedseq --version
