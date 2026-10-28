@@ -1,1 +1,36 @@
-theme: jekyll-theme-slate
+title: 文玉昊
+author: 文玉昊
+email: ""
+description: >-
+  文玉昊的个人站点：项目笔记、技术随笔与开源实践。
+url: "https://wenyuhaokikika.github.io"
+baseurl: ""
+lang: zh-CN
+timezone: Asia/Shanghai
+
+theme: minima
+
+show_excerpts: true
+
+header_pages:
+  - about.md
+
+github_username: wenyuhaokikika
+
+minima:
+  social_links:
+    - platform: github
+      user_url: "https://github.com/wenyuhaokikika"
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+markdown: kramdown
+kramdown:
+  input: GFM
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
