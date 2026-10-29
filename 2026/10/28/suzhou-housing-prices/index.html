@@ -11,7 +11,7 @@
   <meta name="generator" content="Hexo 5.4.0">
 
   
-    <meta name="description" content="苏州六区房价分析系统：基于 FastAPI 和 SQLite 的成交价数据查询与可视化工具">
+    <meta name="description" content="房价预测工具：基于机器学习的苏州六区房价预测系统，使用 Ridge 回归模型预测房价走势">
   
 
   
@@ -24,7 +24,7 @@
 
   
 
-  <title>苏州六区房价分析系统：FastAPI、SQLite 与成交价数据 | 文玉昊</title>
+  <title>房价预测工具 | 文玉昊</title>
 
   
   
@@ -95,7 +95,7 @@
     <div class="header-content">
       <div class="post-text layout-block">
         <div class="layout-margin">
-          <h1 class="title-wrap">苏州六区房价分析系统：FastAPI、SQLite 与成交价数据</h1>
+          <h1 class="title-wrap">房价预测工具</h1>
           <h2 class="title-sub-wrap">
             <strong>wenyuhao</strong>
             <span>发布于</span>
@@ -127,45 +127,45 @@
       
       
       <section class="article-entry markdown-body layout-margin content-padding--large soft-size--large soft-style--box">
-<p>这是一个用于查询和分析苏州六区（姑苏、吴中、相城、高新、工业园区、吴江）房价数据的小工具。它以<strong>成交价</strong>为核心指标，提供按区域、小区、时间段筛选的 API 接口和简洁的前端展示。</p>
+<p>这是一个用于<strong>预测</strong>苏州六区（姑苏、吴中、相城、高新、工业园区、吴江）房价的机器学习工具。系统基于历史成交数据训练模型，支持按小区预测未来房价走势。</p>
 
 <p>项目地址：<a href="https://github.com/wenyuhaokikika/suzhou-housing-prices" target="_blank" rel="noopener">GitHub: wenyuhaokikika/suzhou-housing-prices</a></p>
 
-<h2>为什么做这个</h2>
+<h2>预测原理</h2>
 
-<p>市面上大多数房价网站展示的是挂牌价或评估价，而真正能反映市场的是成交价。这个项目的目标是：</p>
+<p>系统使用历史成交价数据，通过机器学习模型预测房价。主要流程如下：</p>
+
+<ol>
+  <li><strong>数据准备</strong>：收集苏州六区的历史成交价数据</li>
+  <li><strong>特征工程</strong>：提取时间、区域、面积等特征</li>
+  <li><strong>模型选择</strong>：对比 Ridge、RandomForest、GradientBoosting 三种模型</li>
+  <li><strong>模型验证</strong>：时间感知的 70/15/15 训练/验证/测试集划分 + TimeSeriesSplit 5 折交叉验证</li>
+  <li><strong>预测输出</strong>：按小区输出预测价格</li>
+</ol>
+
+<h2>模型选择与评估</h2>
+
+<p>经过对比实验，最终选用 <strong>Ridge 回归</strong> 作为预测模型。在测试集上的表现：</p>
 
 <ul>
-  <li>聚焦苏州六个主城区的二手房成交数据；</li>
-  <li>提供清晰的 API 让数据易于获取和二次分析；</li>
-  <li>保持轻量，本地即可运行，无需复杂部署。</li>
+  <li><strong>RMSE</strong>：约 264 元/平方米</li>
+  <li><strong>MAE</strong>：约 213 元/平方米</li>
+  <li><strong>R²</strong>：约 0.9985</li>
+  <li><strong>MAPE</strong>：约 1.18%</li>
 </ul>
+
+<p>Ridge 模型在保持高精度的同时，具有较好的泛化能力和可解释性。</p>
 
 <h2>技术栈</h2>
 
 <ul>
-  <li><strong>FastAPI</strong>：高性能的 Python Web 框架，自带 OpenAPI 文档；</li>
-  <li><strong>SQLite</strong>：零配置的嵌入式数据库，数据文件随项目走；</li>
-  <li><strong>Pydantic</strong>：数据校验和序列化；</li>
-  <li><strong>简洁前端</strong>：原生 HTML/CSS/JS，无框架依赖。</li>
+  <li><strong>FastAPI</strong>：高性能的 Python Web 框架，自带 OpenAPI 文档</li>
+  <li><strong>scikit-learn</strong>：机器学习模型训练与预测</li>
+  <li><strong>SQLite</strong>：存储历史数据和预测结果</li>
+  <li><strong>简洁前端</strong>：原生 HTML/CSS/JS，无框架依赖</li>
 </ul>
 
-<h2>数据说明</h2>
-
-<p>仓库内包含的是 <strong>Demo 数据</strong>，用于演示系统功能。Demo 数据基于公开信息模拟生成，不代表真实成交记录。如需真实数据，请自行获取并导入。</p>
-
-<p>数据字段包括：</p>
-
-<ul>
-  <li>区域（district）</li>
-  <li>小区名（community）</li>
-  <li>成交价（price，单位：元/平方米）</li>
-  <li>成交日期（date）</li>
-  <li>面积（area，平方米）</li>
-  <li>户型（layout）</li>
-</ul>
-
-<h2>本地体验</h2>
+<h2>本地运行</h2>
 
 <pre><code># 克隆仓库
 git clone https://github.com/wenyuhaokikika/suzhou-housing-prices.git
@@ -178,45 +178,34 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 
 # 访问
-# API 文档：http://127.0.0.1:8000/docs
-# 前端页面：http://127.0.0.1:8000/</code></pre>
+# 预测页面：http://127.0.0.1:8000/predict
+# API 文档：http://127.0.0.1:8000/docs</code></pre>
 
-<h2>API 示例</h2>
+<h2>预测 API</h2>
 
-<p>查询姑苏区 2026 年的成交记录：</p>
+<p>获取模型评估指标：</p>
 
-<pre><code>GET /api/prices?district=姑苏&year=2026</code></pre>
+<pre><code>GET /api/predict/metrics</code></pre>
 
-<p>按小区名模糊搜索：</p>
+<p>按小区预测房价：</p>
 
-<pre><code>GET /api/prices?community=桂花</code></pre>
+<pre><code>GET /api/predict/{community_id}</code></pre>
 
-<p>获取各区均价统计：</p>
+<p>触发模型训练：</p>
 
-<pre><code>GET /api/stats/district</code></pre>
+<pre><code>POST /api/predict/train</code></pre>
 
-<h2>项目结构</h2>
+<h2>数据说明</h2>
 
-<pre><code>suzhou-housing-prices/
-├── main.py           # FastAPI 入口
-├── models.py         # 数据模型
-├── database.py       # SQLite 连接
-├── routers/          # API 路由
-├── static/           # 前端资源
-├── data/             # Demo 数据
-└── requirements.txt</code></pre>
+<p>仓库内包含的是 <strong>Demo 数据</strong>，用于演示系统功能。Demo 数据基于公开信息模拟生成，不代表真实成交记录。如需真实数据，请自行获取并导入。</p>
 
-<h2>后续计划</h2>
+<h2>声明</h2>
 
-<ul>
-  <li>增加数据可视化图表（均价走势、区域对比）；</li>
-  <li>支持数据导入导出；</li>
-  <li>添加用户收藏和关注小区功能。</li>
-</ul>
+<p>本工具仅供学习和研究使用。预测结果基于历史数据和统计模型，<strong>不构成任何投资建议</strong>。房价受多种因素影响，实际走势可能与预测存在偏差。</p>
 
 <h2>欢迎参与</h2>
 
-<p>如果你对苏州房价数据感兴趣，或者有改进建议，欢迎：</p>
+<p>如果你对房价预测或机器学习感兴趣，欢迎：</p>
 
 <ul>
   <li>⭐ <a href="https://github.com/wenyuhaokikika/suzhou-housing-prices" target="_blank" rel="noopener">Star 这个项目</a></li>
